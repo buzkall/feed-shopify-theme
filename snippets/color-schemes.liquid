@@ -1,0 +1,19 @@
+{% doc %}
+  Emits the per-scheme CSS custom properties for the theme's color schemes
+  (OS 2.0 `color_scheme_group`). Sections opt in via `class="color-{{ scheme.id }}"`.
+  Kept intentionally light — the Feed sections style themselves with Tailwind and
+  dark-mode variants, so these only expose `--color-background`/`--color-foreground`
+  for any section that wants them.
+
+  @example
+  {% render 'color-schemes' %}
+{% enddoc %}
+
+{% style %}
+  {%- for scheme in settings.color_schemes -%}
+    .color-{{ scheme.id }} {
+      --color-background: {{ scheme.settings.background }};
+      --color-foreground: {{ scheme.settings.text }};
+    }
+  {%- endfor -%}
+{% endstyle %}

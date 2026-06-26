@@ -1,0 +1,15 @@
+{
+  "preview": {
+    "url": "http://127.0.0.1:9292"
+  },
+  "tasks": [
+    {
+      "label": "Start dev preview",
+      "prompt": "Start the local development environment. Run `npm run dev` in the background — it launches the Shopify theme dev server (store: unrealistic-goals) together with the Tailwind CSS watcher via concurrently. Wait until the server is serving at http://127.0.0.1:9292, then open the Polyscope preview pointed at that URL. If the Shopify CLI needs authentication, surface the login URL so I can complete it."
+    },
+    {
+      "label": "Rebuild CSS & theme-check",
+      "prompt": "Run `npm run build:css` to recompile assets/tailwind-output.css, then run `shopify theme check` and report any errors or warnings grouped by file."
+    }
+  ]
+}

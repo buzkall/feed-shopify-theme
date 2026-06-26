@@ -1,0 +1,175 @@
+{% comment %}
+  Instagram home-feed "post" card. Used by sections/feed.liquid when its
+  layout setting is "posts". Accepts:
+  - card_product: a product
+{% endcomment %}
+
+{%- liquid
+  assign like_base = card_product.id | modulo: 400 | plus: 23
+  assign review_count = card_product.metafields.reviews.rating_count | default: 0
+  assign on_sale = false
+  if card_product.compare_at_price > card_product.price and card_product.available
+    assign on_sale = true
+  endif
+  assign card_alt = card_product.featured_media.alt | default: card_product.title | escape
+  assign shop_alt = shop.name | escape
+  assign add_variant = card_product.selected_or_first_available_variant
+  assign excerpt = card_product.description | strip_html | truncatewords: 30
+-%}
+
+<article
+  class="feed-post-card"
+  x-data="feedPostCard({ productId: '{{ card_product.id }}', likeBase: {{ like_base }}, productHandle: '{{ card_product.handle }}', productUrl: '{{ card_product.url }}', variantId: {{ add_variant.id | default: 'null' }}, imageCount: {{ card_product.images.size }} })"
+>
+  {%- comment -%} Header: product title as the "username", price as the "location" {%- endcomment -%}
+  <div class="flex items-center justify-between px-4 py-3">
+    <a href="{{ card_product.url }}" class="flex min-w-0 items-center gap-2.5">
+      {%- if settings.logo != blank -%}
+        <span class="block h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-feed-border dark:ring-gray-700">
+          {{ settings.logo | image_url: width: 64 | image_tag: class: 'h-full w-full object-cover', loading: 'lazy', alt: shop_alt }}
+        </span>
+      {%- else -%}
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-xs font-semibold text-white">
+          {{- shop.name | slice: 0 | upcase -}}
+        </span>
+      {%- endif -%}
+      <span class="flex min-w-0 flex-col leading-tight">
+        <span class="flex items-center text-sm font-semibold text-feed-primary dark:text-gray-100">
+          <span class="truncate">{{ card_product.title | escape }}</span>
+        </span>
+        <span class="text-xs text-feed-secondary dark:text-gray-400">
+          {%- if on_sale -%}<span class="line-through">{{ card_product.compare_at_price | money }}</span> {% endif -%}{{ card_product.price | money }}
+        </span>
+      </span>
+    </a>
+
+    {%- comment -%} "…" actions menu {%- endcomment -%}
+    <div class="relative shrink-0" @click.outside="menuOpen = false">
+      <button type="button" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-label="{{ 'feed.post.more' | t }}" class="text-feed-primary dark:text-gray-100">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></svg>
+      </button>
+      <div x-show="menuOpen" x-cloak x-transition.opacity class="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-feed-border bg-white py-1 text-left shadow-feed dark:border-gray-700 dark:bg-feed-dark-elevated">
+        {%- if add_variant != blank -%}
+          <button type="button" @click="addToCart()" class="block w-full px-4 py-2 text-left text-sm text-feed-primary hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800">
+            {{ 'products.product.add_to_cart' | t }}
+          </button>
+        {%- endif -%}
+        <button type="button" @click="share(); menuOpen = false" class="block w-full px-4 py-2 text-left text-sm text-feed-primary hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800">
+          {{ 'feed.action_bar.share' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} Image carousel (swipe like Instagram; double-tap to like) {%- endcomment -%}
+  {%- assign image_count = card_product.images.size -%}
+  <div class="relative">
+    {%- if image_count > 0 -%}
+      <ul
+        x-ref="track"
+        @scroll.passive="onScroll()"
+        @dblclick.prevent="doubleTapLike()"
+        @touchstart.passive="onTouchStart()"
+        @touchend="onTouchEnd($event)"
+        role="list"
+        class="feed-no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth"
+      >
+        {%- for image in card_product.images -%}
+          {%- liquid
+            assign img_alt = image.alt | default: card_alt
+            assign img_loading = 'lazy'
+            if forloop.first
+              assign img_loading = 'eager'
+            endif
+          -%}
+          <li class="w-full shrink-0 snap-center">
+            <a href="{{ card_product.url }}" class="block">
+              <div class="aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                {{
+                  image
+                  | image_url: width: 800
+                  | image_tag: loading: img_loading, widths: '400, 600, 800', sizes: '(min-width: 768px) 470px, 100vw', class: 'h-full w-full object-cover', alt: img_alt
+                }}
+              </div>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <a
+        href="{{ card_product.url }}"
+        @dblclick.prevent="doubleTapLike()"
+        @touchstart.passive="onTouchStart()"
+        @touchend="onTouchEnd($event)"
+        class="block"
+      >
+        <div class="aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+          {{ 'product-apparel-1' | placeholder_svg_tag: 'h-full w-full object-cover' }}
+        </div>
+      </a>
+    {%- endif -%}
+
+    {%- if image_count > 1 -%}
+      {%- comment -%} Arrows (desktop) {%- endcomment -%}
+      <button
+        type="button"
+        x-show="active > 0"
+        x-cloak
+        @click.prevent.stop="goTo(active - 1)"
+        class="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-feed-primary shadow-feed transition hover:bg-white"
+        aria-label="{{ 'general.pagination.previous' | t }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <button
+        type="button"
+        x-show="active < imageCount - 1"
+        x-cloak
+        @click.prevent.stop="goTo(active + 1)"
+        class="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-feed-primary shadow-feed transition hover:bg-white"
+        aria-label="{{ 'general.pagination.next' | t }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+      </button>
+
+      {%- comment -%} Dots {%- endcomment -%}
+      <div class="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+        <template x-for="i in imageCount" :key="i">
+          <span
+            class="h-1.5 rounded-full bg-white shadow transition-all"
+            :class="active === i - 1 ? 'w-4 opacity-100' : 'w-1.5 opacity-60'"
+          ></span>
+        </template>
+      </div>
+    {%- endif -%}
+
+    {%- if on_sale -%}
+      <span class="absolute left-3 top-3 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">{{ 'products.product.on_sale' | t }}</span>
+    {%- endif -%}
+    <div x-show="showHeart" x-cloak class="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <svg viewBox="0 0 24 24" class="feed-heart-burst-animate h-24 w-24 fill-white drop-shadow-lg">
+        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+      </svg>
+    </div>
+  </div>
+
+  {%- render 'feed-action-bar', product: card_product, class: 'px-4', show_cart: true -%}
+
+  {%- comment -%} Share feedback (when the link is copied to the clipboard) {%- endcomment -%}
+  <div x-show="shareCopied" x-cloak x-transition.opacity class="pointer-events-none px-4 pt-1 text-xs font-medium text-feed-link">
+    {{ 'general.share.success_message' | t }}
+  </div>
+
+  {%- comment -%} Caption: product excerpt {%- endcomment -%}
+  {%- if excerpt != blank -%}
+    <p class="px-4 pt-1.5 pb-1 text-sm leading-snug text-feed-primary dark:text-gray-200">{{ excerpt }}</p>
+  {%- endif -%}
+
+  {%- if review_count > 0 -%}
+    <a href="{{ card_product.url }}#feed-reviews" class="mt-1 block px-4 pb-3 text-sm text-feed-secondary hover:underline dark:text-gray-500">
+      {{ 'feed.post.view_reviews' | t: count: review_count }}
+    </a>
+  {%- else -%}
+    <div class="pb-3"></div>
+  {%- endif -%}
+</article>

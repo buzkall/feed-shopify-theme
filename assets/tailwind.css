@@ -1,0 +1,208 @@
+@import 'tailwindcss';
+
+/* Liquid/JS sources to scan for class names (v4 replaces the old JS `content` array). */
+@source '../layout/*.liquid';
+@source '../templates/**/*.liquid';
+@source '../sections/**/*.liquid';
+@source '../snippets/**/*.liquid';
+@source '../assets/*.{js,css}';
+
+/* Enable `class`-based dark mode (Tailwind v4 defaults to media queries). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Instagram-inspired design tokens (ported from the former tailwind.config.js). */
+@theme {
+  --color-feed-primary: #262626;
+  --color-feed-secondary: #737373;
+  --color-feed-link: var(--feed-accent, #0095f6);
+  --color-feed-button: var(--feed-accent, #0095f6);
+  --color-feed-border: #dbdbdb;
+  --color-feed-bg: #ffffff;
+  --color-feed-dark-bg: #121212;
+  --color-feed-dark-elevated: #262626;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --spacing-18: 4.5rem;
+
+  --shadow-feed: 0 0 5px rgba(0, 0, 0, 0.0975);
+}
+
+/* Bump every font size up (font sizes only, so spacing is unaffected). Line-heights
+   are set as unitless ratios so they scale with the larger text instead of staying
+   pinned to Tailwind's default absolute values (which would look cramped). */
+@theme {
+  --text-xs: 1.155rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 1.375rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 1.595rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.76rem;
+  --text-lg--line-height: 1.5;
+  --text-xl: 2.035rem;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 2.42rem;
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 3.025rem;
+  --text-3xl--line-height: 1.2;
+}
+
+/* Instagram-inspired custom components */
+@layer components {
+  .feed-container {
+    @apply max-w-7xl mx-auto px-4;
+  }
+
+  .feed-header {
+    @apply fixed top-0 left-0 right-0 h-14 bg-feed-bg dark:bg-feed-dark-bg border-b border-feed-border z-50 flex items-center justify-between px-4;
+  }
+
+  .feed-button-primary {
+    @apply bg-feed-button text-white font-semibold py-2 px-4 rounded-md hover:opacity-90 transition-colors;
+  }
+
+  .feed-button-secondary {
+    @apply bg-transparent border border-feed-border text-feed-primary dark:text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-50 dark:hover:bg-feed-dark-elevated transition-colors;
+  }
+
+  .feed-card {
+    @apply bg-white dark:bg-feed-dark-elevated border border-feed-border dark:border-feed-dark-elevated rounded-md overflow-hidden shadow-feed;
+  }
+
+  .feed-story {
+    @apply w-16 h-16 rounded-full border-2 border-pink-500 p-0.5 flex items-center justify-center;
+  }
+
+  .feed-story-img {
+    @apply w-full h-full rounded-full object-cover;
+  }
+
+  .feed-product-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-4;
+  }
+
+  /* Custom grid classes (avoid colliding with Dawn's unlayered `.grid` class) */
+  .feed-grid {
+    @apply grid grid-cols-1 gap-1 md:grid-cols-3 md:gap-4;
+  }
+
+  .feed-footer-grid {
+    @apply grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12;
+  }
+
+  .feed-product-layout {
+    @apply grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-12;
+  }
+
+  /* display:grid under a non-colliding name (pair with grid-cols-* utilities) */
+  .feed-grid {
+    @apply grid;
+  }
+
+  /* Quantity input: centered, no native number spinners */
+  .feed-qty-input {
+    @apply w-12 border-x border-feed-border bg-transparent py-2 text-center text-sm text-feed-primary dark:border-gray-700 dark:text-gray-100;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Hide the scrollbar on horizontal scroll tracks (e.g. the stories carousel) */
+  .feed-no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .feed-no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Single-column Instagram "home feed" of posts (NOT a grid — safe vs Dawn .grid) */
+  .feed-post-feed {
+    @apply mx-auto flex w-full max-w-[470px] flex-col gap-6;
+  }
+
+  .feed-post-card {
+    @apply overflow-hidden rounded-lg border border-feed-border bg-white pb-2 dark:border-gray-800 dark:bg-feed-dark-elevated;
+  }
+
+  /* Instagram action row (♡ comment share … bookmark); callers add horizontal padding */
+  .feed-action-bar {
+    @apply flex items-center gap-5 py-3;
+  }
+
+  /* Mobile bottom tab bar */
+  .feed-bottom-nav {
+    @apply fixed inset-x-0 bottom-0 z-[45] flex h-14 items-center justify-around border-t border-feed-border bg-white/95 backdrop-blur-sm md:hidden dark:border-gray-800 dark:bg-feed-dark-bg/95;
+  }
+
+  .feed-bottom-nav__tab {
+    @apply flex flex-col items-center justify-center gap-0.5 px-4 py-1 text-feed-secondary transition-colors dark:text-gray-500;
+  }
+
+  .feed-bottom-nav__tab--active {
+    @apply text-feed-primary dark:text-white;
+  }
+}
+
+/* Dark mode overrides */
+.dark {
+  color-scheme: dark;
+}
+
+/* AlpineJS: keep elements hidden until Alpine has initialized */
+[x-cloak] {
+  display: none !important;
+}
+
+/* Remove WebKit number-input spinners on the quantity field */
+.feed-qty-input::-webkit-inner-spin-button,
+.feed-qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Instagram off-white canvas (white sections/cards sit on top); dark: near-black.
+   Loads after Dawn's inline color-scheme <style>, so equal-specificity wins. */
+body.gradient {
+  background-color: #fafafa;
+}
+
+html.dark body.gradient {
+  background-color: #121212;
+}
+
+/* IG sections sit transparently on the body canvas. Dawn's color-scheme-* classes
+   otherwise paint them an opaque light background that blocks dark mode. Same
+   single-class specificity, but this loads after Dawn's inline <style>, so it wins. */
+.feed,
+.feed-stories,
+.feed-product,
+.feed-reviews,
+.feed-footer,
+.feed-social,
+.feed-related,
+.feed-collection-banner,
+.feed-saved {
+  background-color: transparent;
+}
+
+/* Double-tap heart burst */
+@keyframes feed-heart-burst {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  40% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.feed-heart-burst-animate {
+  animation: feed-heart-burst 0.7s ease-out forwards;
+}

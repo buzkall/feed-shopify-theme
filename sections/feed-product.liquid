@@ -1,0 +1,264 @@
+{% comment %}
+  Instagram-style product page.
+  Task 6: media carousel (snippets/feed-product-gallery).
+  Task 7: information layout — 2/3 gallery + 1/3 info, option-based variant
+  picker, quantity, like/share, hashtag tags, caption description, sticky mobile
+  purchase bar, and Product JSON-LD.
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign form_id = 'feed-product-form-' | append: section.id
+  assign like_base = product.id | modulo: 400 | plus: 23
+-%}
+
+<section class="feed-product color-{{ section.settings.color_scheme }}">
+  <div class="feed-container py-6 md:py-10">
+    <div class="feed-product-layout">
+      {%- comment -%} Media carousel (2/3) {%- endcomment -%}
+      <div class="md:col-span-2 md:sticky md:top-20 md:self-start">
+        {% render 'feed-product-gallery', product: product %}
+      </div>
+
+      {%- comment -%} Info (1/3) {%- endcomment -%}
+      <div
+        x-data="feedProductForm()"
+        data-product-id="{{ product.id }}"
+        data-like-base="{{ like_base }}"
+        data-product-handle="{{ product.handle }}"
+        class="md:col-span-1"
+      >
+        {%- if section.settings.show_vendor and product.vendor != blank -%}
+          <p class="mb-1 text-sm text-feed-secondary dark:text-gray-400">{{ product.vendor | escape }}</p>
+        {%- endif -%}
+
+        <h1 class="text-2xl! font-semibold! text-feed-primary! dark:text-white!">{{ product.title | escape }}</h1>
+
+        {%- comment -%} Instagram action bar {%- endcomment -%}
+        <div class="mt-2">
+          {%- render 'feed-action-bar', product: product -%}
+          <span x-show="shareCopied" x-cloak class="text-xs text-feed-link">{{ 'general.share.success_message' | t }}</span>
+        </div>
+
+        {%- comment -%} Price (reactive to the selected variant) {%- endcomment -%}
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <template x-if="current && current.on_sale">
+            <span class="text-lg text-feed-secondary line-through dark:text-gray-500" x-text="current.compare_at"></span>
+          </template>
+          <span
+            class="text-xl font-semibold"
+            :class="current && current.on_sale ? 'text-red-500' : 'text-feed-primary dark:text-white'"
+            x-text="current ? current.price : ''"
+          >{{ current_variant.price | money }}</span>
+          <template x-if="current && current.on_sale">
+            <span class="rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">{{ 'products.product.on_sale' | t }}</span>
+          </template>
+        </div>
+
+        {%- comment -%} Variant data for the picker {%- endcomment -%}
+        <script type="application/json" x-ref="variantData">
+          [
+            {%- for variant in product.variants -%}
+              {
+                "id": {{ variant.id }},
+                "options": {{ variant.options | json }},
+                "available": {{ variant.available }},
+                "price": {{ variant.price | money | json }},
+                "compare_at": {{ variant.compare_at_price | money | json }},
+                "on_sale": {% if variant.compare_at_price > variant.price %}true{% else %}false{% endif %}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
+        </script>
+
+        <form
+          id="{{ form_id }}"
+          action="{{ routes.cart_add_url }}"
+          method="post"
+          enctype="multipart/form-data"
+          class="mt-6"
+          @submit.prevent="current && $store.cart.add(current.id, qty)"
+        >
+          <input type="hidden" name="id" :value="current ? current.id : ''">
+
+          {%- unless product.has_only_default_variant -%}
+            {%- for option in product.options_with_values -%}
+              {%- assign opt_index = forloop.index0 -%}
+              <div class="mb-4">
+                <span class="mb-1.5 block text-sm font-medium text-feed-primary dark:text-gray-100">{{ option.name | escape }}</span>
+                <div class="flex flex-wrap gap-2">
+                  {%- for value in option.values -%}
+                    <button
+                      type="button"
+                      @click="selectOption({{ opt_index }}, {{ value | json | escape }})"
+                      :class="selected[{{ opt_index }}] === {{ value | json | escape }} ? 'border-feed-primary bg-feed-primary text-white dark:border-white dark:bg-white dark:text-feed-primary' : 'border-feed-border text-feed-primary dark:border-gray-700 dark:text-gray-100'"
+                      :disabled="!optionAvailable({{ opt_index }}, {{ value | json | escape }})"
+                      class="rounded-full border px-4 py-1.5 text-sm transition-colors disabled:cursor-not-allowed disabled:line-through disabled:opacity-40"
+                    >
+                      {{- value | escape -}}
+                    </button>
+                  {%- endfor -%}
+                </div>
+              </div>
+            {%- endfor -%}
+          {%- endunless -%}
+
+          {%- comment -%} Quantity {%- endcomment -%}
+          <div class="mb-5">
+            <span class="mb-1.5 block text-sm font-medium text-feed-primary dark:text-gray-100">{{ 'products.product.quantity.label' | t }}</span>
+            <div class="inline-flex items-center rounded-full border border-feed-border dark:border-gray-700">
+              <button type="button" @click="qty = Math.max(1, qty - 1)" class="px-3 py-2 text-feed-primary dark:text-gray-100" aria-label="{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}">&minus;</button>
+              <input type="number" name="quantity" min="1" x-model.number="qty" class="feed-qty-input" aria-label="{{ 'products.product.quantity.label' | t }}">
+              <button type="button" @click="qty = qty + 1" class="px-3 py-2 text-feed-primary dark:text-gray-100" aria-label="{{ 'products.product.quantity.increase' | t: product: product.title | escape }}">+</button>
+            </div>
+          </div>
+
+          <button type="submit" name="add" class="feed-button-primary w-full" :disabled="!current || !current.available">
+            <span x-show="current && current.available">{{ 'products.product.add_to_cart' | t }}</span>
+            <span x-show="!current || !current.available" x-cloak>{{ 'products.product.sold_out' | t }}</span>
+          </button>
+        </form>
+
+        {%- comment -%} Hashtag-style tags {%- endcomment -%}
+        {%- if product.tags.size > 0 -%}
+          <div class="mt-6 flex flex-wrap gap-x-3 gap-y-1">
+            {%- for tag in product.tags -%}
+              <a href="{{ routes.search_url }}?q={{ tag | url_encode }}" class="text-sm text-feed-link hover:underline">#{{ tag | handleize | replace: '-', '' }}</a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} Caption-style description {%- endcomment -%}
+        {%- if product.description != blank -%}
+          <div class="feed-product__caption mt-6 max-w-none text-sm leading-relaxed text-feed-primary dark:text-gray-200">
+            {{ product.description }}
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} Mobile sticky purchase bar (shares this Alpine scope) {%- endcomment -%}
+        <div class="fixed inset-x-0 bottom-14 z-40 flex items-center gap-3 border-t border-feed-border bg-white/95 p-3 backdrop-blur md:hidden dark:border-gray-800 dark:bg-feed-dark-bg/95">
+          <span class="text-base font-semibold text-feed-primary dark:text-white" x-text="current ? current.price : ''">{{ current_variant.price | money }}</span>
+          <button type="submit" name="add" form="{{ form_id }}" class="feed-button-primary ml-auto flex-1" :disabled="!current || !current.available">
+            <span x-show="current && current.available">{{ 'products.product.add_to_cart' | t }}</span>
+            <span x-show="!current || !current.available" x-cloak>{{ 'products.product.sold_out' | t }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": {{ product.title | json }},
+    "description": {{ product.description | strip_html | truncate: 400 | json }},
+    "image": [{{ product.featured_image | image_url: width: 1200 | prepend: 'https:' | json }}],
+    "brand": { "@type": "Brand", "name": {{ product.vendor | json }} },
+    "offers": {
+      "@type": "Offer",
+      "price": {{ current_variant.price | divided_by: 100.0 | json }},
+      "priceCurrency": {{ cart.currency.iso_code | json }},
+      "availability": "https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}",
+      "url": {{ request.origin | append: product.url | json }}
+    }
+  }
+</script>
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('feedProductForm', () => ({
+      variants: [],
+      selected: [],
+      current: null,
+      qty: 1,
+      liked: false,
+      likeCount: 0,
+      saved: false,
+      shareCopied: false,
+      init() {
+        this.variants = JSON.parse(this.$refs.variantData.textContent);
+        const initial = this.variants.find((v) => v.available) || this.variants[0];
+        this.selected = initial ? [...initial.options] : [];
+        this.updateVariant();
+
+        const base = parseInt(this.$root.dataset.likeBase || '0', 10);
+        this.liked = localStorage.getItem('feed-like-' + this.$root.dataset.productId) === '1';
+        this.likeCount = base + (this.liked ? 1 : 0);
+        this.saved = JSON.parse(localStorage.getItem('feed-saved') || '[]').includes(this.$root.dataset.productHandle);
+      },
+      toggleSave() {
+        const handle = this.$root.dataset.productHandle;
+        let list = JSON.parse(localStorage.getItem('feed-saved') || '[]');
+        if (list.includes(handle)) {
+          list = list.filter((h) => h !== handle);
+          this.saved = false;
+        } else {
+          list.push(handle);
+          this.saved = true;
+        }
+        localStorage.setItem('feed-saved', JSON.stringify(list));
+      },
+      selectOption(index, value) {
+        this.selected[index] = value;
+        this.updateVariant();
+      },
+      updateVariant() {
+        this.current = this.variants.find((v) => v.options.every((o, i) => o === this.selected[i])) || null;
+      },
+      optionAvailable(index, value) {
+        return this.variants.some(
+          (v) => v.available && v.options[index] === value && v.options.every((o, i) => i === index || o === this.selected[i])
+        );
+      },
+      toggleLike() {
+        this.liked = !this.liked;
+        this.likeCount += this.liked ? 1 : -1;
+        localStorage.setItem('feed-like-' + this.$root.dataset.productId, this.liked ? '1' : '0');
+      },
+      addToCart() {
+        if (this.current) this.$store.cart.add(this.current.id, this.qty);
+      },
+      async share() {
+        const url = window.location.href;
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: document.title, url: url });
+          } catch (e) {}
+        } else {
+          try {
+            await navigator.clipboard.writeText(url);
+            this.shareCopied = true;
+            setTimeout(() => (this.shareCopied = false), 2000);
+          } catch (e) {}
+        }
+      },
+    }));
+  });
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.main-product.name",
+  "tag": "section",
+  "class": "section-feed-product",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "t:sections.featured-collection.settings.show_vendor.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:sections.all.colors.label"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

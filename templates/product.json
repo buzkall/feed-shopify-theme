@@ -1,0 +1,41 @@
+{
+  "sections": {
+    "main": {
+      "type": "feed-product",
+      "settings": {
+        "show_vendor": true,
+        "color_scheme": "scheme-1"
+      }
+    },
+    "feed-reviews": {
+      "type": "feed-reviews",
+      "settings": {
+        "heading": "Reviews",
+        "color_scheme": "scheme-1",
+        "padding_top": 28,
+        "padding_bottom": 28
+      },
+      "blocks": {
+        "r1": { "type": "review", "settings": { "author": "Mia R.", "rating": 5, "date": "2 days ago", "body": "Obsessed with this — exactly as pictured and amazing quality." } },
+        "r2": { "type": "review", "settings": { "author": "Leo P.", "rating": 4, "date": "1 week ago", "body": "Great fit and fast shipping. Would buy again." } },
+        "r3": { "type": "review", "settings": { "author": "Sara K.", "rating": 5, "date": "3 weeks ago", "body": "My new favourite. So many compliments!" } }
+      },
+      "block_order": ["r1", "r2", "r3"]
+    },
+    "feed-related-products": {
+      "type": "feed-related-products",
+      "settings": {
+        "heading": "You may also like",
+        "products_to_show": 6,
+        "color_scheme": "scheme-1",
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    }
+  },
+  "order": [
+    "main",
+    "feed-reviews",
+    "feed-related-products"
+  ]
+}

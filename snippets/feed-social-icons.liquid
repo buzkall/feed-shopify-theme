@@ -1,0 +1,43 @@
+{% doc %}
+  Renders a row of social media icon links for the platforms the merchant has
+  configured under Theme settings. Self-contained (Tailwind + inline SVGs), no
+  Dawn CSS dependencies.
+
+  @param {string} [class] - Optional extra classes for the wrapping <ul>.
+
+  @example
+  {% render 'feed-social-icons', class: 'mt-4' %}
+{% enddoc %}
+
+{% liquid
+  assign platforms = 'facebook,instagram,youtube,tiktok,twitter,pinterest,snapchat,tumblr,vimeo' | split: ','
+%}
+
+<ul class="flex flex-wrap items-center gap-4 {{ class }}" role="list">
+  {%- for platform in platforms -%}
+    {%- assign setting_key = 'social_' | append: platform | append: '_link' -%}
+    {%- assign link = settings[setting_key] -%}
+    {%- if link != blank -%}
+      <li>
+        <a
+          href="{{ link }}"
+          class="inline-flex h-6 w-6 items-center justify-center text-feed-primary transition-opacity hover:opacity-70 dark:text-white"
+          target="_blank"
+          rel="noopener"
+        >
+          <span class="sr-only">{{ platform | capitalize }}</span>
+          {%- assign icon = 'icon-' | append: platform | append: '.svg' -%}
+          {{- icon | inline_asset_content -}}
+        </a>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+</ul>
+
+{% stylesheet %}
+  .feed-footer__social svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+{% endstylesheet %}

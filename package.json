@@ -1,0 +1,27 @@
+{
+  "name": "feed-theme",
+  "version": "1.0.0",
+  "description": "Instagram-inspired Shopify theme built on the Skeleton base (Tailwind v4 + Alpine.js)",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/tailwind.css -o ./assets/tailwind-output.css",
+    "watch:css": "tailwindcss -i ./assets/tailwind.css -o ./assets/tailwind-output.css --watch",
+    "theme:dev": "shopify theme dev --store=unrealistic-goals",
+    "dev": "concurrently -n shopify,tailwind -c magenta,cyan \"npm:theme:dev\" \"npm:watch:css\""
+  },
+  "keywords": [
+    "shopify",
+    "theme",
+    "instagram",
+    "tailwindcss",
+    "alpinejs"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "tailwindcss": "^4.1.10"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.10",
+    "concurrently": "^9.1.0"
+  }
+}

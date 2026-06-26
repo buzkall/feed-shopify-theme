@@ -1,0 +1,326 @@
+{% comment %}
+  Instagram-inspired Stories carousel.
+  A horizontally scrolling row of circular collection "stories" rendered below the header.
+  Uses native CSS scroll-snap for touch/trackpad swiping and AlpineJS for the desktop arrows.
+{% endcomment %}
+
+{%- liquid
+  case section.settings.image_size
+    when 'small'
+      assign ring_size = 'w-[5.4rem] h-[5.4rem]'
+      assign label_width = 'w-[5.4rem]'
+    when 'large'
+      assign ring_size = 'w-[7.8rem] h-[7.8rem]'
+      assign label_width = 'w-[7.8rem]'
+    else
+      assign ring_size = 'w-[6.6rem] h-[6.6rem]'
+      assign label_width = 'w-[6.6rem]'
+  endcase
+-%}
+
+<div
+  x-data="feedStories"
+  class="feed-stories color-{{ section.settings.color_scheme }}"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="mx-auto w-full max-w-[470px] px-3">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="mb-3 px-1 text-base! font-semibold! text-feed-primary! dark:text-white!">
+        {{ section.settings.heading | escape }}
+      </h2>
+    {%- endif -%}
+
+    <div class="relative">
+      {%- comment -%} Previous arrow (desktop only) {%- endcomment -%}
+      <button
+        type="button"
+        x-show="canScrollPrev"
+        x-cloak
+        @click="scrollTrack(-1)"
+        class="absolute left-0 top-[calc(50%-0.75rem)] z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-feed-primary shadow-feed transition hover:bg-gray-50 md:flex dark:bg-feed-dark-elevated dark:text-white"
+        aria-label="{{ 'general.pagination.previous' | t }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      {%- comment -%} Scrollable track {%- endcomment -%}
+      <ul
+        x-ref="track"
+        @scroll.passive="updateArrows()"
+        role="list"
+        class="feed-no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2"
+      >
+        {%- if section.blocks.size > 0 -%}
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign collection = block.settings.collection
+              assign story_image = block.settings.image
+              if story_image == blank and collection != blank
+                assign story_image = collection.image
+              endif
+              if story_image == blank and collection != blank and collection.products.first
+                assign story_image = collection.products.first.featured_image
+              endif
+              assign story_title = block.settings.title | default: collection.title
+              assign story_url = collection.url
+              assign story_id = block.id
+            -%}
+            <li class="shrink-0 snap-start" {{ block.shopify_attributes }}>
+              <a
+                href="{{ story_url | default: '#' }}"
+                @click="markSeen('{{ story_id }}')"
+                class="group flex flex-col items-center focus:outline-none"
+                {% if story_url == blank %}aria-disabled="true"{% endif %}
+              >
+                <span class="block rounded-full {{ ring_size }}{% unless section.settings.show_gradient_ring and section.settings.enable_watched_stories %} {% if section.settings.show_gradient_ring %}bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105{% else %}border-2 border-feed-border p-[2px] dark:border-gray-700{% endif %}{% endunless %}"{% if section.settings.show_gradient_ring and section.settings.enable_watched_stories %} :class="isSeen('{{ story_id }}') ? 'border-2 border-gray-300 p-[2px] dark:border-gray-700' : 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105'"{% endif %}>
+                  <span class="block h-full w-full overflow-hidden rounded-full bg-white p-[2px] dark:bg-feed-dark-bg">
+                    {%- if story_image != blank -%}
+                      {{
+                        story_image
+                        | image_url: width: 240
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '80, 120, 160, 240',
+                          sizes: '80px',
+                          class: 'h-full w-full rounded-full object-cover',
+                          alt: story_title | escape
+                      }}
+                    {%- else -%}
+                      <span class="flex h-full w-full items-center justify-center rounded-full bg-gray-100 text-gray-300 dark:bg-gray-800">
+                        {{ 'collection-apparel-1' | placeholder_svg_tag: 'h-full w-full object-cover rounded-full' }}
+                      </span>
+                    {%- endif -%}
+                  </span>
+                </span>
+                {%- if story_title != blank -%}
+                  <span class="mt-1 block truncate text-center text-xs text-feed-primary {{ label_width }} dark:text-gray-200">
+                    {{- story_title | escape -}}
+                  </span>
+                {%- endif -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- comment -%} No stories configured: fall back to the store's collections so each circle links through {%- endcomment -%}
+          {%- for collection in collections limit: 12 -%}
+            {%- liquid
+              assign story_image = collection.image
+              if story_image == blank and collection.products.first
+                assign story_image = collection.products.first.featured_image
+              endif
+              assign story_id = collection.handle
+            -%}
+            <li class="shrink-0 snap-start">
+              <a href="{{ collection.url }}" @click="markSeen('{{ story_id }}')" class="group flex flex-col items-center focus:outline-none">
+                <span class="block rounded-full {{ ring_size }}{% unless section.settings.show_gradient_ring and section.settings.enable_watched_stories %} {% if section.settings.show_gradient_ring %}bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105{% else %}border-2 border-feed-border p-[2px] dark:border-gray-700{% endif %}{% endunless %}"{% if section.settings.show_gradient_ring and section.settings.enable_watched_stories %} :class="isSeen('{{ story_id }}') ? 'border-2 border-gray-300 p-[2px] dark:border-gray-700' : 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105'"{% endif %}>
+                  <span class="block h-full w-full overflow-hidden rounded-full bg-white p-[2px] dark:bg-feed-dark-bg">
+                    {%- if story_image != blank -%}
+                      {{
+                        story_image
+                        | image_url: width: 240
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '80, 120, 160, 240',
+                          sizes: '80px',
+                          class: 'h-full w-full rounded-full object-cover',
+                          alt: collection.title | escape
+                      }}
+                    {%- else -%}
+                      <span class="flex h-full w-full items-center justify-center rounded-full bg-gray-100 text-gray-300 dark:bg-gray-800">
+                        {{ 'collection-apparel-1' | placeholder_svg_tag: 'h-full w-full object-cover rounded-full' }}
+                      </span>
+                    {%- endif -%}
+                  </span>
+                </span>
+                <span class="mt-1 block truncate text-center text-xs text-feed-primary {{ label_width }} dark:text-gray-200">
+                  {{- collection.title | escape -}}
+                </span>
+              </a>
+            </li>
+          {%- else -%}
+            {%- comment -%} Store has no collections yet: show inert placeholders {%- endcomment -%}
+            {%- for i in (1..6) -%}
+              {%- assign ph = i | minus: 1 | modulo: 4 | plus: 1 -%}
+              <li class="shrink-0 snap-start">
+                <span class="flex flex-col items-center">
+                  <span class="block rounded-full {{ ring_size }} bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
+                    <span class="block h-full w-full overflow-hidden rounded-full bg-white p-[2px] dark:bg-feed-dark-bg">
+                      {{ 'collection-apparel-' | append: ph | placeholder_svg_tag: 'h-full w-full object-cover rounded-full bg-gray-100 dark:bg-gray-800 text-gray-300' }}
+                    </span>
+                  </span>
+                  <span class="mt-1 block h-3 {{ label_width }} rounded bg-gray-100 dark:bg-gray-800"></span>
+                </span>
+              </li>
+            {%- endfor -%}
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+
+      {%- comment -%} Next arrow (desktop only) {%- endcomment -%}
+      <button
+        type="button"
+        x-show="canScrollNext"
+        x-cloak
+        @click="scrollTrack(1)"
+        class="absolute right-0 top-[calc(50%-0.75rem)] z-10 hidden h-9 w-9 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-feed-primary shadow-feed transition hover:bg-gray-50 md:flex dark:bg-feed-dark-elevated dark:text-white"
+        aria-label="{{ 'general.pagination.next' | t }}"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+{%- comment -%} Self-contained AlpineJS component for the desktop scroll arrows {%- endcomment -%}
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('feedStories', () => ({
+      canScrollPrev: false,
+      canScrollNext: false,
+      seenIds: [],
+      init() {
+        this.seenIds = JSON.parse(localStorage.getItem('feed-seen-stories') || '[]');
+        this.$nextTick(() => this.updateArrows());
+        window.addEventListener('resize', () => this.updateArrows());
+      },
+      isSeen(id) {
+        return this.seenIds.includes(id);
+      },
+      markSeen(id) {
+        if (!this.seenIds.includes(id)) {
+          this.seenIds.push(id);
+          localStorage.setItem('feed-seen-stories', JSON.stringify(this.seenIds));
+        }
+      },
+      updateArrows() {
+        const el = this.$refs.track;
+        if (!el) return;
+        this.canScrollPrev = el.scrollLeft > 4;
+        this.canScrollNext = Math.ceil(el.scrollLeft + el.clientWidth) < el.scrollWidth - 4;
+      },
+      scrollTrack(direction) {
+        const el = this.$refs.track;
+        if (!el) return;
+        el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: 'smooth' });
+      },
+    }));
+  });
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.feed_stories.name",
+  "tag": "section",
+  "class": "section-feed-stories",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:sections.featured-collection.settings.title.label",
+      "default": "Stories"
+    },
+    {
+      "type": "select",
+      "id": "image_size",
+      "options": [
+        {
+          "value": "small",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "medium",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "large",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "medium",
+      "label": "t:sections.feed_stories.settings.image_size.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_gradient_ring",
+      "default": true,
+      "label": "t:sections.feed_stories.settings.show_gradient_ring.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_watched_stories",
+      "default": true,
+      "label": "t:sections.feed_stories.settings.enable_watched_stories.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "story",
+      "name": "t:sections.feed_stories.blocks.story.name",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:sections.featured-collection.settings.collection.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.image-with-text.settings.image.label"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "t:sections.feed_stories.blocks.story.settings.title.label",
+          "info": "t:sections.feed_stories.blocks.story.settings.title.info"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "t:sections.feed_stories.presets.name",
+      "blocks": [
+        { "type": "story" },
+        { "type": "story" },
+        { "type": "story" },
+        { "type": "story" }
+      ]
+    }
+  ]
+}
+{% endschema %}

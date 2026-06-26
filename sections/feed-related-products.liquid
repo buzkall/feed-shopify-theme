@@ -1,0 +1,125 @@
+{% comment %}
+  Instagram-style related products ("You may also like").
+  Uses a self-contained <feed-recommendations> custom element (defined in the
+  {% javascript %} block below) that lazy-fetches the Shopify Recommendations
+  API and swaps in the rendered grid. Falls back to the server-rendered grid
+  when recommendations are available on first render.
+{% endcomment %}
+
+<section class="feed-related color-{{ section.settings.color_scheme }}">
+  <div
+    class="feed-container"
+    style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+  >
+    <feed-recommendations
+      data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}&intent=related&section_id={{ section.id }}"
+      data-product-id="{{ product.id }}"
+    >
+      {%- if recommendations.performed and recommendations.products_count > 0 -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="mb-4 px-1 text-lg! font-semibold! text-feed-primary! dark:text-white!">
+            {{ section.settings.heading | escape }}
+          </h2>
+        {%- endif -%}
+
+        <ul role="list" class="feed-grid">
+          {%- for recommendation in recommendations.products -%}
+            <li class="feed__item">
+              {% render 'feed-product-card', card_product: recommendation %}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </feed-recommendations>
+  </div>
+</section>
+
+{% javascript %}
+  class FeedRecommendations extends HTMLElement {
+    connectedCallback() {
+      const handleIntersection = (entries, observer) => {
+        if (!entries[0].isIntersecting) return;
+        observer.unobserve(this);
+        this.loadRecommendations();
+      };
+      new IntersectionObserver(handleIntersection.bind(this), { rootMargin: '0px 0px 400px 0px' }).observe(this);
+    }
+
+    loadRecommendations() {
+      const url = this.dataset.url;
+      if (!url) return;
+
+      fetch(url)
+        .then((response) => response.text())
+        .then((text) => {
+          const html = new DOMParser().parseFromString(text, 'text/html');
+          const recommendations = html.querySelector('feed-recommendations');
+          if (recommendations && recommendations.innerHTML.trim().length) {
+            this.innerHTML = recommendations.innerHTML;
+          }
+        })
+        .catch((e) => {
+          console.error('[feed-recommendations]', e);
+        });
+    }
+  }
+
+  if (!customElements.get('feed-recommendations')) {
+    customElements.define('feed-recommendations', FeedRecommendations);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "t:sections.related-products.name",
+  "tag": "section",
+  "class": "section-feed-related-products",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "You may also like",
+      "label": "t:sections.related-products.settings.heading.label"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "label": "t:sections.related-products.settings.products_to_show.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 28
+    }
+  ]
+}
+{% endschema %}

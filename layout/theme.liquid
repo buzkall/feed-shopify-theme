@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="{{ settings.feed_accent | default: '#0095f6' }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    {% # Instagram accent colour, consumed by the Tailwind --feed-accent token %}
+    <style>
+      :root { --feed-accent: {{ settings.feed_accent | default: '#0095f6' }}; }
+    </style>
+
+    {%- comment -%} Apply dark mode before first paint to avoid a flash of the wrong theme {%- endcomment -%}
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var preset = {{ settings.feed_default_theme | default: 'light' | json }};
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var useDark = stored ? stored === 'dark' : (preset === 'dark' || (preset === 'auto' && prefersDark));
+          if (useDark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+
+    {% # Inlined CSS variables + per-section color schemes %}
+    {% render 'css-variables' %}
+    {% render 'color-schemes' %}
+
+    {% comment %} Font preloading + face declarations {% endcomment %}
+    {% unless settings.type_primary_font.system? %}
+      <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+      {{ settings.type_primary_font | font_url | preload_tag: as: 'font', crossorigin: 'anonymous' }}
+    {% endunless %}
+    {% style %}
+      {{ settings.type_primary_font | font_face: font_display: 'swap' }}
+    {% endstyle %}
+
+    {% # Critical + Tailwind/Alpine stack %}
+    {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    {{ 'tailwind-output.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'alpinejs.js' | asset_url }}" defer="defer"></script>
+
+    {% # Social, title, etc. %}
+    {% render 'meta-tags' %}
+
+    {{ content_for_header }}
+
+    <style>
+      [x-cloak] { display: none !important; }
+    </style>
+  </head>
+
+  <body>
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="pt-14 pb-16 md:pb-0" role="main">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% render 'feed-cart-drawer' %}
+    {% render 'feed-bottom-nav' %}
+  </body>
+</html>

@@ -1,0 +1,328 @@
+{% comment %}
+  Instagram-inspired Header Navigation Component
+  This section creates a sticky header with logo, hamburger menu, search icon, and dynamic cart icon
+  using Tailwind CSS for styling and AlpineJS for interactivity.
+{% endcomment %}
+
+<div 
+  x-data="{
+    searchOpen: false,
+    dark: false,
+    scrolled: false
+  }"
+  x-init="
+    window.addEventListener('scroll', () => {
+      scrolled = window.scrollY > 10;
+    });
+
+    // Mirror the .dark class on <html> (set by the inline head script) for the toggle icon
+    dark = document.documentElement.classList.contains('dark');
+
+    // Open the search overlay when the mobile bottom nav asks for it
+    window.addEventListener('feed:open-search', () => {
+      searchOpen = true;
+      $nextTick(() => $refs.searchInput?.focus());
+    });
+  "
+  class="w-full"
+>
+  <!-- Sticky Header -->
+  <header 
+    class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    :class="scrolled ? 'bg-white shadow-sm dark:bg-gray-900' : 'bg-white/80 backdrop-blur-sm dark:bg-gray-900/80'"
+  >
+    <div class="feed-container relative flex items-center justify-between h-16 px-4">
+      <!-- Left: Logo -->
+      <div class="flex-shrink-0">
+        <a href="{{ routes.root_url }}" class="block">
+          {%- if settings.logo != blank -%}
+            {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
+            {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
+            {{ settings.logo | image_url: width: 120 | image_tag:
+              class: 'h-8 w-auto',
+              alt: logo_alt,
+              height: logo_height,
+              width: settings.logo_width,
+              loading: 'eager'
+            }}
+          {%- else -%}
+            <span class="inline-flex items-center text-lg font-semibold text-feed-primary dark:text-white">
+              {{ shop.name }}
+            </span>
+          {%- endif -%}
+        </a>
+      </div>
+
+      <!-- Center: Inline Search box (shown in the header bar when open) -->
+      <div
+        x-show="searchOpen"
+        x-cloak
+        x-data="feedSearch()"
+        x-effect="searchOpen && $nextTick(() => $refs.searchInput?.focus())"
+        @click.outside="searchOpen = false"
+        @keydown.escape.window="searchOpen = false; reset()"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="absolute left-1/2 top-1/2 z-10 w-full max-w-md -translate-x-1/2 -translate-y-1/2 px-4"
+      >
+        <div class="relative">
+          <form action="{{ routes.search_url }}" method="get" role="search">
+            <div class="relative">
+              <input
+                x-ref="searchInput"
+                type="search"
+                name="q"
+                x-model="query"
+                @input.debounce.250ms="search()"
+                autocomplete="off"
+                placeholder="{{ 'general.search.search' | t }}"
+                class="feed-search-input w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-10 pr-10 text-sm text-feed-primary outline-none focus:border-feed-primary focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-gray-500"
+                role="combobox"
+                aria-expanded="false"
+                :aria-expanded="results.length > 0"
+                aria-controls="feed-search-results"
+              >
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                  class="w-4 h-4 text-gray-400 dark:text-gray-500"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </div>
+              <button
+                type="button"
+                @click="searchOpen = false; reset()"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-feed-primary dark:hover:text-white"
+                aria-label="{{ 'accessibility.close' | t }}"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </form>
+
+          {%- comment -%} Predictive results dropdown {%- endcomment -%}
+          <div
+            x-show="loading || query.trim().length > 1"
+            x-cloak
+            x-transition.opacity
+            class="absolute left-0 right-0 top-full mt-2 rounded-xl border border-gray-100 bg-white p-2 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+          >
+            <div id="feed-search-results" role="listbox" aria-label="{{ 'general.search.search' | t }}">
+              <p x-show="loading" x-cloak class="px-2 py-2 text-sm text-feed-secondary dark:text-gray-400">{{ 'accessibility.loading' | t }}</p>
+
+              <p x-show="!loading && query.trim().length > 1 && results.length === 0" x-cloak class="px-2 py-2 text-sm text-feed-secondary dark:text-gray-400">
+                {{ 'templates.search.no_results' | t: terms: '' | strip }}
+              </p>
+
+              <ul x-show="results.length > 0" x-cloak role="list" class="max-h-[60vh] space-y-1 overflow-y-auto">
+                <template x-for="item in results" :key="item.id">
+                  <li role="option">
+                    <a :href="item.url" class="flex items-center gap-3 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <span class="block h-12 w-12 shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+                        <template x-if="item.image"><img :src="item.image" :alt="item.title" class="h-full w-full object-cover" width="48" height="48" loading="lazy"></template>
+                      </span>
+                      <span class="min-w-0">
+                        <span class="block truncate text-sm font-medium text-feed-primary dark:text-gray-100" x-text="item.title"></span>
+                        <span x-show="item.price" class="block text-xs text-feed-secondary dark:text-gray-400" x-text="item.price"></span>
+                      </span>
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Navigation Icons -->
+      <div class="flex items-center space-x-4">
+        <!-- Search Icon -->
+        <button
+          @click.stop="searchOpen = !searchOpen"
+          class="relative p-2 rounded-full text-feed-primary transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+          :class="searchOpen ? 'bg-gray-100 dark:bg-gray-800' : ''"
+          aria-label="{{ 'general.search.search' | t }}"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </button>
+
+        <!-- Cart Icon (opens drawer) -->
+        <button
+          type="button"
+          @click="$store.cart.openDrawer()"
+          class="relative p-2 rounded-full text-feed-primary transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+          aria-label="{{ 'templates.cart.cart' | t }}"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+          </svg>
+
+          <span
+            x-show="$store.cart.item_count > 0"
+            x-cloak
+            class="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-xs text-white"
+            x-text="$store.cart.item_count > 99 ? '99+' : $store.cart.item_count"
+          ></span>
+        </button>
+
+        <!-- Dark / Light Mode Toggle -->
+        <button
+          @click="
+            dark = !dark;
+            document.documentElement.classList.toggle('dark', dark);
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+          "
+          class="relative p-2 rounded-full text-feed-primary transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+          :aria-label="dark ? '{{ 'accessibility.light_mode' | t }}' : '{{ 'accessibility.dark_mode' | t }}'"
+        >
+          <!-- Moon (switch to dark) -->
+          <svg x-show="!dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>
+          <!-- Sun (switch to light) -->
+          <svg x-show="dark" x-cloak xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Spacer for fixed header -->
+  <div class="h-16"></div>
+</div>
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('feedSearch', () => ({
+      query: '',
+      results: [],
+      loading: false,
+      async search() {
+        const q = this.query.trim();
+        if (q.length < 2) {
+          this.results = [];
+          this.loading = false;
+          return;
+        }
+        this.loading = true;
+        try {
+          const url =
+            '{{ routes.predictive_search_url }}.json?q=' +
+            encodeURIComponent(q) +
+            '&resources[type]=product&resources[limit]=6&resources[options][unavailable_products]=last';
+          const res = await fetch(url, { headers: { Accept: 'application/json' } });
+          const data = await res.json();
+          const products = (data.resources && data.resources.results && data.resources.results.products) || [];
+          this.results = products.map((p) => ({
+            id: p.id,
+            title: p.title,
+            url: p.url,
+            image: (p.featured_image && p.featured_image.url) || p.image || '',
+            price: p.price ? this.fmt(p.price) : '',
+          }));
+        } catch (e) {
+          this.results = [];
+        } finally {
+          this.loading = false;
+        }
+      },
+      fmt(value) {
+        try {
+          return new Intl.NumberFormat(document.documentElement.lang || undefined, {
+            style: 'currency',
+            currency: {{ cart.currency.iso_code | default: shop.currency | json }},
+          }).format(parseFloat(value));
+        } catch (e) {
+          return value;
+        }
+      },
+      reset() {
+        this.query = '';
+        this.results = [];
+        this.loading = false;
+      },
+    }));
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Instagram Header",
+  "class": "section-feed-header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "t:sections.header.settings.menu.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_separator",
+      "default": true,
+      "label": "t:sections.header.settings.show_line_separator.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.header.settings.mobile_layout.content"
+    },
+    {
+      "type": "select",
+      "id": "mobile_logo_position",
+      "options": [
+        {
+          "value": "center",
+          "label": "t:sections.header.settings.mobile_logo_position.options__1.label"
+        },
+        {
+          "value": "left",
+          "label": "t:sections.header.settings.mobile_logo_position.options__2.label"
+        }
+      ],
+      "default": "left",
+      "label": "t:sections.header.settings.mobile_logo_position.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram Header",
+      "settings": {
+        "menu": "main-menu"
+      }
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  [x-cloak] {
+    display: none !important;
+  }
+  
+  .feed-container {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* Hide the browser's native search clear (×) so only our custom close button shows */
+  .feed-search-input::-webkit-search-cancel-button,
+  .feed-search-input::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Remove the global focus ring on the search input */
+  .feed-search-input:focus,
+  .feed-search-input:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+</style>

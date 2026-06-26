@@ -1,0 +1,158 @@
+{% comment %}
+  Instagram-style product media carousel.
+  Native CSS scroll-snap (swipe on touch) + AlpineJS for dots, thumbnails,
+  arrows and a zoom lightbox. Works without JS (the track stays scrollable).
+{% endcomment %}
+
+{%- liquid
+  assign media_count = product.media.size
+  assign first_alt = product.featured_media.alt | default: product.title | escape
+-%}
+
+{%- if media_count == 0 -%}
+  <div class="aspect-square w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+    {{ 'product-apparel-1' | placeholder_svg_tag: 'h-full w-full object-cover' }}
+  </div>
+{%- else -%}
+  <div x-data="feedGallery({ count: {{ media_count }} })" class="feed-gallery">
+    <div class="relative">
+      {%- comment -%} Main carousel {%- endcomment -%}
+      <ul
+        x-ref="track"
+        @scroll.passive="onScroll()"
+        role="list"
+        class="feed-no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-lg"
+      >
+        {%- for media in product.media -%}
+          {%- liquid
+            assign media_alt = media.alt | default: product.title | escape
+            assign img_loading = 'lazy'
+            assign img_priority = 'low'
+            if forloop.first
+              assign img_loading = 'eager'
+              assign img_priority = 'high'
+            endif
+          -%}
+          <li class="w-full shrink-0 snap-center">
+            <button
+              type="button"
+              data-zoom-src="{{ media.preview_image | image_url: width: 1600 }}"
+              @click="openLightbox($el.dataset.zoomSrc)"
+              class="block w-full cursor-zoom-in"
+              aria-label="{{ product.title | escape }}"
+            >
+              <div class="aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                {{
+                  media.preview_image
+                  | image_url: width: 1200
+                  | image_tag:
+                    loading: img_loading,
+                    fetchpriority: img_priority,
+                    widths: '400, 600, 800, 1200',
+                    sizes: '(min-width: 768px) 50vw, 100vw',
+                    class: 'h-full w-full object-cover',
+                    alt: media_alt
+                }}
+              </div>
+            </button>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if media_count > 1 -%}
+        {%- comment -%} Arrows (desktop) {%- endcomment -%}
+        <button
+          type="button"
+          x-show="active > 0"
+          x-cloak
+          @click="goTo(active - 1)"
+          class="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-feed-primary shadow-feed transition hover:bg-white"
+          aria-label="{{ 'general.pagination.previous' | t }}"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+        <button
+          type="button"
+          x-show="active < count - 1"
+          x-cloak
+          @click="goTo(active + 1)"
+          class="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-feed-primary shadow-feed transition hover:bg-white"
+          aria-label="{{ 'general.pagination.next' | t }}"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </button>
+
+        {%- comment -%} Dots {%- endcomment -%}
+        <div class="pointer-events-none absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+          <template x-for="i in count" :key="i">
+            <span
+              class="h-1.5 rounded-full bg-white shadow transition-all"
+              :class="active === i - 1 ? 'w-4 opacity-100' : 'w-1.5 opacity-60'"
+            ></span>
+          </template>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Zoom lightbox (teleported to <body> so the sticky gallery's stacking context doesn't trap it under later sections) {%- endcomment -%}
+    <template x-teleport="body">
+      <div
+        x-show="lightboxOpen"
+        x-cloak
+        x-transition.opacity
+        @click="closeLightbox()"
+        @keydown.escape.window="closeLightbox()"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+        role="dialog"
+        aria-modal="true"
+      >
+        {% # theme-check-disable ImgWidthAndHeight %}
+        <img :src="lightboxSrc" alt="{{ first_alt }}" class="max-h-full max-w-full object-contain" />
+        {% # theme-check-enable ImgWidthAndHeight %}
+        <button
+          type="button"
+          x-ref="lightboxClose"
+          @click="closeLightbox()"
+          class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('feedGallery', ({ count }) => ({
+        active: 0,
+        count: count,
+        lightboxOpen: false,
+        lightboxSrc: '',
+        lastFocused: null,
+        onScroll() {
+          const el = this.$refs.track;
+          if (!el) return;
+          this.active = Math.round(el.scrollLeft / el.clientWidth);
+        },
+        goTo(index) {
+          const el = this.$refs.track;
+          if (!el) return;
+          const i = Math.max(0, Math.min(this.count - 1, index));
+          el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+          this.active = i;
+        },
+        openLightbox(src) {
+          this.lastFocused = document.activeElement;
+          this.lightboxSrc = src;
+          this.lightboxOpen = true;
+          this.$nextTick(() => this.$refs.lightboxClose?.focus());
+        },
+        closeLightbox() {
+          this.lightboxOpen = false;
+          this.lastFocused?.focus();
+        },
+      }));
+    });
+  </script>
+{%- endif -%}

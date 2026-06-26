@@ -1,0 +1,17 @@
+{
+  "type": "header",
+  "name": "t:general.header",
+  "sections": {
+    "header": {
+      "type": "feed-header",
+      "settings": {
+        "menu": "main-menu",
+        "show_line_separator": true,
+        "mobile_logo_position": "left"
+      }
+    }
+  },
+  "order": [
+    "header"
+  ]
+}
