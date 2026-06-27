@@ -9,6 +9,7 @@
  */
 {
   "current": {
+    "type_primary_font": "assistant_n4",
     "feed_accent": "#0095f6",
     "feed_default_theme": "light",
     "feed_show_verified": false,

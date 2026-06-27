@@ -37,10 +37,10 @@
               {%- endfor -%}
             </div>
           {%- else -%}
-            <ul data-feed-grid role="list" class="feed-grid">
+            <ul data-feed-grid role="list" class="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {%- for product in feed_collection.products -%}
-                <li class="feed__item">
-                  {% render 'feed-product-card', card_product: product %}
+                <li>
+                  {% render 'feed-post-card', card_product: product %}
                 </li>
               {%- endfor -%}
             </ul>
