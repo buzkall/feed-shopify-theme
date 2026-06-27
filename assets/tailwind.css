@@ -172,6 +172,16 @@ html.dark body.gradient {
   background-color: #121212;
 }
 
+/* Skeleton's critical.css turns every .shopify-section into a 3-column grid
+   ([margin] [content] [margin]) and forces children into the centred column.
+   The Instagram components were authored for Dawn, where sections are plain
+   blocks and each component self-centres via its own `margin-inline: auto`
+   (e.g. .feed-container). Opt the IG sections out of the grid so they behave
+   like Dawn: a full-width block whose inner container does the centring. */
+.shopify-section[class*='section-feed'] {
+  display: block;
+}
+
 /* IG sections sit transparently on the body canvas. Dawn's color-scheme-* classes
    otherwise paint them an opaque light background that blocks dark mode. Same
    single-class specificity, but this loads after Dawn's inline <style>, so it wins. */

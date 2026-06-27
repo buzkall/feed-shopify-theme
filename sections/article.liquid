@@ -6,59 +6,69 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/article
 {% endcomment %}
 
-{% if article.image %}
-  {{ article.image | image_url: width: 1000 | image_tag }}
-{% endif %}
+<article class="feed-container py-8 md:py-12">
+  <div class="mx-auto max-w-3xl">
+    {%- if article.image -%}
+      <div class="mb-8 overflow-hidden rounded-md border border-feed-border dark:border-gray-800">
+        {{ article.image | image_url: width: 1200 | image_tag: widths: '600, 900, 1200', class: 'w-full', alt: article.title | escape }}
+      </div>
+    {%- endif -%}
 
-<h1>{{ article.title }}</h1>
+    <h1 class="text-3xl font-semibold text-feed-primary md:text-4xl dark:text-white">{{ article.title }}</h1>
+    {%- assign date = article.published_at | time_tag: format: 'date' -%}
+    <p class="mt-3 text-sm text-feed-secondary dark:text-gray-400">{{ 'blog.article_metadata_html' | t: date: date, author: article.author }}</p>
 
-{% assign date = article.published_at | time_tag: format: 'date' %}
-<p>{{ 'blog.article_metadata_html' | t: date: date, author: article.author }}</p>
+    <div class="mt-8 leading-relaxed text-feed-primary [&_a]:text-feed-link [&_a]:underline [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:my-4 [&_img]:rounded-md [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-4 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 dark:text-gray-200">
+      {{ article.content }}
+    </div>
 
-{{ article.content }}
+    {%- if blog.comments_enabled? -%}
+      <div class="mt-12 border-t border-feed-border pt-8 dark:border-gray-800">
+        <h2 class="mb-6 text-xl font-semibold text-feed-primary dark:text-white">{{ 'blog.article_comments' | t }}</h2>
 
-{% if blog.comments_enabled? %}
-  <h2>{{ 'blog.article_comments' | t }}</h2>
-
-  <div id="comments">
-    {% paginate article.comments by 10 %}
-      {% for comment in article.comments %}
-        <div>
-          <p>{{ comment.author }}</p>
-          <p>
-            {{- comment.created_at | time_tag: format: 'date' -}}
-          </p>
-          <p>{{ comment.content }}</p>
+        <div id="comments" class="space-y-6">
+          {%- paginate article.comments by 10 -%}
+            {%- for comment in article.comments -%}
+              <div class="rounded-md border border-feed-border p-4 dark:border-gray-800">
+                <p class="font-medium text-feed-primary dark:text-white">{{ comment.author }}</p>
+                <p class="text-xs text-feed-secondary dark:text-gray-400">{{ comment.created_at | time_tag: format: 'date' }}</p>
+                <p class="mt-2 text-feed-primary dark:text-gray-200">{{ comment.content }}</p>
+              </div>
+            {%- endfor -%}
+            {%- if paginate.pages > 1 -%}
+              <nav class="flex justify-center gap-4 text-sm" role="navigation">
+                {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}#comments" class="underline">{{ paginate.previous.title }}</a>{%- endif -%}
+                {%- if paginate.next -%}<a href="{{ paginate.next.url }}#comments" class="underline">{{ paginate.next.title }}</a>{%- endif -%}
+              </nav>
+            {%- endif -%}
+          {%- endpaginate -%}
         </div>
-      {% endfor %}
 
-      {{ paginate | default_pagination: anchor: 'comments' }}
-    {% endpaginate %}
+        {%- form 'new_comment', article -%}
+          <h2 class="mt-10 mb-4 text-xl font-semibold text-feed-primary dark:text-white">{{ 'blog.comment_form_title' | t }}</h2>
+          {{ form.errors | default_errors }}
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="author" class="mb-1 block text-sm text-feed-secondary dark:text-gray-400">{{ 'blog.comment_form_name' | t }}</label>
+              <input type="text" name="comment[author]" id="author" value="{{ form.author }}" required class="h-11 w-full rounded-md border border-feed-border bg-feed-bg px-3 text-feed-primary focus:outline-none focus:ring-1 focus:ring-feed-primary dark:border-gray-700 dark:bg-feed-dark-elevated dark:text-white">
+            </div>
+            <div>
+              <label for="email" class="mb-1 block text-sm text-feed-secondary dark:text-gray-400">{{ 'blog.comment_form_email' | t }}</label>
+              <input type="email" name="comment[email]" id="email" value="{{ form.email }}" required class="h-11 w-full rounded-md border border-feed-border bg-feed-bg px-3 text-feed-primary focus:outline-none focus:ring-1 focus:ring-feed-primary dark:border-gray-700 dark:bg-feed-dark-elevated dark:text-white">
+            </div>
+          </div>
+          <div class="mt-4">
+            <label for="body" class="mb-1 block text-sm text-feed-secondary dark:text-gray-400">{{ 'blog.comment_form_body' | t }}</label>
+            <textarea name="comment[body]" id="body" rows="4" required class="w-full rounded-md border border-feed-border bg-feed-bg px-3 py-2 text-feed-primary focus:outline-none focus:ring-1 focus:ring-feed-primary dark:border-gray-700 dark:bg-feed-dark-elevated dark:text-white">{{ form.body }}</textarea>
+          </div>
+          <button type="submit" class="mt-4 rounded-md bg-feed-primary px-8 py-3 font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-feed-dark-bg">
+            {{ 'blog.comment_form_submit' | t }}
+          </button>
+        {%- endform -%}
+      </div>
+    {%- endif -%}
   </div>
-
-  {% form 'new_comment', article %}
-    <h2>{{ 'blog.comment_form_title' | t }}</h2>
-
-    {{ form.errors | default_errors }}
-
-    <div>
-      <label for="author">{{ 'blog.comment_form_name' | t }}</label>
-      <input type="text" name="comment[author]" id="author" value="{{ form.author }}" required>
-    </div>
-
-    <div>
-      <label for="email">{{ 'blog.comment_form_email' | t }}</label>
-      <input type="email" name="comment[email]" id="email" value="{{ form.email }}" required>
-    </div>
-
-    <div>
-      <label for="body">{{ 'blog.comment_form_body' | t }}</label>
-      <textarea name="comment[body]" id="body" required>{{ form.body }}</textarea>
-    </div>
-
-    <input type="submit" value="{{ 'blog.comment_form_submit' | t }}">
-  {% endform %}
-{% endif %}
+</article>
 
 {% schema %}
 {

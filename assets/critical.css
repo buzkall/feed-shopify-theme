@@ -1,9 +1,73 @@
 /** Critical CSS for the theme. This file is included on every page. */
 
+/* Establish the cascade-layer order up front (matches Tailwind's own declaration
+   in tailwind-output.css). The reset below lives in `base` so Tailwind's
+   `components`/`utilities` helpers (mx-auto, margin-inline, h-full, object-cover,
+   mb-*, …) win. Unlayered rules outrank every layer regardless of specificity, so
+   an unlayered reset would silently beat Tailwind utilities — breaking the
+   Instagram components' `margin-inline: auto` centering and `h-full` image sizing. */
+@layer properties, theme, base, components, utilities;
+
 /* Reset styles inspired by https://www.joshwcomeau.com/css/custom-css-reset/ */
-* {
-  box-sizing: border-box;
-  margin: 0;
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    border-radius: var(--style-border-radius-inputs);
+  }
+
+  select {
+    background-color: var(--color-background);
+    color: currentcolor;
+  }
+
+  dialog {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  p:empty {
+    display: none;
+  }
+
+  :is(p, h1, h2, h3, h4, h5, h6):first-child,
+  :empty:first-child + :where(p, h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 0;
+  }
+
+  :is(p, h1, h2, h3, h4, h5, h6):last-child,
+  :where(p, h1, h2, h3, h4, h5, h6) + :has(+ :empty:last-child) {
+    margin-block-end: 0;
+  }
 }
 
 body {
@@ -17,61 +81,14 @@ html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
   overflow: hidden;
 }
 
-img,
-picture,
-video,
-canvas,
-svg {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-input,
-textarea,
-select {
-  font: inherit;
-  border-radius: var(--style-border-radius-inputs);
-}
-
-select {
-  background-color: var(--color-background);
-  color: currentcolor;
-}
-
-dialog {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-}
-
-p {
-  text-wrap: pretty;
-}
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  overflow-wrap: break-word;
-}
-
-p:empty {
-  display: none;
-}
-
-:is(p, h1, h2, h3, h4, h5, h6):first-child,
-:empty:first-child + :where(p, h1, h2, h3, h4, h5, h6) {
-  margin-block-start: 0;
-}
-
-:is(p, h1, h2, h3, h4, h5, h6):last-child,
-:where(p, h1, h2, h3, h4, h5, h6) + :has(+ :empty:last-child) {
-  margin-block-end: 0;
-}
-
 /** Theme styles below */
+
+/* Global type scale: 20% smaller than the browser default for the compact
+   Instagram feel. All rem-based Tailwind sizing scales from this root. */
+html {
+  font-size: 80%;
+}
+
 body {
   font-family: var(--font-primary--family);
   background-color: var(--color-background);

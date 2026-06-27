@@ -12,7 +12,7 @@
 {% enddoc %}
 
 <div
-  class="group {{ block.settings.layout_direction }}"
+  class="layout-group {{ block.settings.layout_direction }}"
   style="
     --padding: {{ block.settings.padding }}px;
     --alignment: {{ block.settings.alignment }};
@@ -23,7 +23,9 @@
 </div>
 
 {% stylesheet %}
-  .group {
+  /* Renamed from `.group` to avoid colliding with Tailwind's reserved `group`
+     hover-marker class used by the Instagram product/result cards. */
+  .layout-group {
     display: flex;
     flex-wrap: nowrap;
     overflow: hidden;

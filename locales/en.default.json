@@ -570,7 +570,7 @@
   "404": {
     "title": "404",
     "not_found": "Page not found.",
-    "back_to_shopping": "Back to shopping"
+    "back_to_shopping": "Continue shopping"
   },
   "blog": {
     "article_comments": "Comments",
@@ -585,7 +585,15 @@
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "headline": "Your cart",
+    "empty": "Your cart is empty",
+    "continue_shopping": "Continue shopping",
+    "product": "Product",
+    "quantity": "Quantity",
+    "total": "Total",
+    "estimated_total": "Estimated total",
+    "taxes_note": "Taxes included. Discounts and shipping calculated at checkout."
   },
   "customers": {
     "login": {
@@ -615,6 +623,7 @@
     "placeholder": "Search articles, pages, or products",
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
-    "results_for_html": "{{ count }} results found for {{ terms }}"
+    "results_for_html": "{{ count }} results found for {{ terms }}",
+    "results_title": "Search results"
   }
 }

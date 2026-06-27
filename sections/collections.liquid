@@ -5,79 +5,41 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
-<h1>{{ 'collections.title' | t }}</h1>
+<div class="feed-container py-8 md:py-12">
+  <h1 class="mb-8 text-3xl font-semibold text-feed-primary dark:text-white">{{ 'collections.title' | t }}</h1>
 
-<div
-  class="collections {{ section.settings.grid_item_width }}"
-  style="--grid-gap: {{ section.settings.grid_gap }}px"
->
-  {% for collection in collections %}
-    <a class="collection-card" href="{{ collection.url }}">
-      {% if collection.featured_image %}
-        {% render 'image',
-          class: 'collection-card__image',
-          image: collection.featured_image,
-          width: 600,
-          height: 600,
-          crop: 'center'
-        %}
-      {% endif %}
-
-      <div class="collection-card__content">
-        <p>{{ collection.title }}</p>
-
-        {% if collection.description %}
-          <p>{{ collection.description | strip_html | truncatewords: 15 }}</p>
-        {% endif %}
-      </div>
-    </a>
-  {% endfor %}
+  <ul role="list" class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+    {%- for collection in collections -%}
+      <li>
+        <a href="{{ collection.url }}" class="group block">
+          <div class="aspect-square overflow-hidden rounded-md border border-feed-border bg-gray-100 dark:border-gray-800 dark:bg-gray-800">
+            {%- if collection.featured_image -%}
+              {{
+                collection.featured_image
+                | image_url: width: 800
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '300, 400, 600, 800',
+                  sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+                  class: 'h-full w-full object-cover transition-transform duration-300 group-hover:scale-105',
+                  alt: collection.title | escape
+              }}
+            {%- else -%}
+              {{ 'collection-1' | placeholder_svg_tag: 'h-full w-full object-cover' }}
+            {%- endif -%}
+          </div>
+          <p class="mt-3 text-lg font-medium text-feed-primary dark:text-white">{{ collection.title }}</p>
+          <span class="mt-1 inline-block text-feed-secondary transition-transform group-hover:translate-x-1 dark:text-gray-400" aria-hidden="true">&rarr;</span>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
 </div>
-
-{% stylesheet %}
-  .collections {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(var(--collection-card-size), 100%), 1fr));
-    gap: var(--grid-gap);
-  }
-  .collections--compact {
-    --collection-card-size: 160px;
-  }
-  .collections--full {
-    --collection-card-size: 280px;
-  }
-  .collection-card {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-{% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.collections_grid",
-  "settings": [
-    {
-      "type": "select",
-      "id": "grid_item_width",
-      "label": "t:labels.grid_item_width",
-      "options": [
-        { "value": "collections--compact", "label": "t:options.size.small" },
-        { "value": "collections--full", "label": "t:options.size.large" }
-      ],
-      "default": "collections--full"
-    },
-    {
-      "type": "range",
-      "id": "grid_gap",
-      "label": "t:labels.grid_gap",
-      "min": 0,
-      "max": 50,
-      "step": 5,
-      "unit": "px",
-      "default": 10
-    }
-  ],
+  "settings": [],
   "presets": [{ "name": "t:general.collections_grid" }]
 }
 {% endschema %}
