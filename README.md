@@ -1,160 +1,69 @@
-<h1 align="center" style="position: relative;">
-  <br>
-    <img src="./assets/shoppy-x-ray.svg" alt="logo" width="200">
-  <br>
-  Shopify Skeleton Theme
-</h1>
+<h1 align="center">feed-theme</h1>
 
-A minimal, carefully structured Shopify theme designed to help you quickly get started. Designed with modularity, maintainability, and Shopify's best practices in mind.
+<p align="center">An Instagram-inspired Shopify storefront built on the <strong>Skeleton</strong> base with <strong>Tailwind CSS v4</strong> and <strong>Alpine.js</strong>.</p>
 
 <p align="center">
   <a href="./LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
-  <a href="./actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Shopify/skeleton-theme/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
-## Getting started
+It recreates familiar social-media patterns — a stories carousel, a square product feed, swipeable product galleries, a like/comment/share action bar, a slide-in cart drawer and a mobile bottom tab bar — on top of Shopify's lightweight Skeleton theme. It mirrors the design of its Dawn-based sibling, [`ig_theme`](https://github.com/buzkall/shopify_ig_theme), while keeping the leaner Skeleton foundation.
 
-### Prerequisites
+## Features
 
-Before starting, ensure you have the latest Shopify CLI installed:
+- **Stories carousel** with gradient rings (`feed-stories`)
+- **Instagram feed** (`feed`): single-column "posts" on the home page, and the same post card shown in a **3-column grid** on the collection and search pages
+- **Post cards** (`feed-post-card`) with a swipeable image carousel, double-tap-to-like, and a like / comment / share / save action bar
+- **Slide-in cart drawer** and **mobile bottom navigation**
+- **IG-style reviews**, saved page, and social gallery
+- **Light/dark mode** (applied before first paint to avoid a flash)
+- Storefront pages (cart, search, list-collections, 404, blog, article, page) styled to match the feed aesthetic
+- Configurable **accent color** and primary **font** via theme settings
 
-- [Shopify CLI](https://shopify.dev/docs/api/shopify-cli) – helps you download, upload, preview themes, and streamline your workflows
+## Tech stack
 
-If you use VS Code:
+- **Shopify Liquid** on the [Skeleton](https://github.com/Shopify/skeleton-theme) base
+- **Tailwind CSS v4** — compiled from `assets/tailwind.css` → `assets/tailwind-output.css`
+- **Alpine.js** — self-hosted at `assets/alpinejs.js`, loaded globally and deferred
+- **`critical.css`** — per-page essential CSS; its reset is wrapped in `@layer base` so Tailwind's `components`/`utilities` always win the cascade
 
-- [Shopify Liquid VS Code Extension](https://shopify.dev/docs/storefronts/themes/tools/shopify-liquid-vscode) – provides syntax highlighting, linting, inline documentation, and auto-completion specifically designed for Liquid templates
+## Local development
 
-### Clone
-
-Clone this repository using Git or Shopify CLI:
-
-```bash
-git clone git@github.com:Shopify/skeleton-theme.git
-# or
-shopify theme init
-```
-
-### Preview
-
-Preview this theme using Shopify CLI:
+You need a Shopify store (a free [development store](https://partners.shopify.com) works) and the [Shopify CLI](https://shopify.dev/docs/api/shopify-cli).
 
 ```bash
-shopify theme dev
+npm install
+npm run dev          # Shopify theme dev + Tailwind watcher (via concurrently)
 ```
+
+`npm run dev` runs the Shopify dev server (store set in the `theme:dev` script) alongside the Tailwind watcher and serves the storefront at <http://127.0.0.1:9292>.
+
+### Scripts
+
+| Command             | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `npm run dev`       | Shopify theme dev server + Tailwind watcher (`concurrently`)       |
+| `npm run theme:dev` | Shopify theme dev server only                                      |
+| `npm run build:css` | Compile `assets/tailwind.css` → `assets/tailwind-output.css`       |
+| `npm run watch:css` | Recompile Tailwind on change                                       |
+
+> Run `npm run build:css` before committing whenever you change Tailwind classes, since `assets/tailwind-output.css` is the checked-in build artifact. Validate with `shopify theme check`.
 
 ## Theme architecture
 
 ```bash
 .
-├── assets          # Stores static assets (CSS, JS, images, fonts, etc.)
-├── blocks          # Reusable, nestable, customizable UI components
-├── config          # Global theme settings and customization options
-├── layout          # Top-level wrappers for pages (layout templates)
-├── locales         # Translation files for theme internationalization
-├── sections        # Modular full-width page components
-├── snippets        # Reusable Liquid code or HTML fragments
-└── templates       # Templates combining sections to define page structures
+├── assets          # Static assets (compiled CSS, JS, images) + critical.css, tailwind.css, alpinejs.js
+├── blocks          # Reusable, nestable theme blocks
+├── config          # Global theme settings (settings_schema.json / settings_data.json)
+├── layout          # Top-level page wrappers (theme.liquid)
+├── locales         # Translation files (en.default.json)
+├── sections        # Page sections — feed, feed-stories, feed-header, feed-footer, cart, search, …
+├── snippets        # Reusable fragments — feed-post-card, feed-product-card, feed-cart-drawer, …
+└── templates       # JSON templates wiring sections together per page type
 ```
 
-To learn more, refer to the [theme architecture documentation](https://shopify.dev/docs/storefronts/themes/architecture).
-
-### Templates
-
-[Templates](https://shopify.dev/docs/storefronts/themes/architecture/templates#template-types) control what's rendered on each type of page in a theme.
-
-The Skeleton Theme scaffolds [JSON templates](https://shopify.dev/docs/storefronts/themes/architecture/templates/json-templates) to make it easy for merchants to customize their store.
-
-None of the template types are required, and not all of them are included in the Skeleton Theme. Refer to the [template types reference](https://shopify.dev/docs/storefronts/themes/architecture/templates#template-types) for a full list.
-
-### Sections
-
-[Sections](https://shopify.dev/docs/storefronts/themes/architecture/sections) are Liquid files that allow you to create reusable modules of content that can be customized by merchants. They can also include blocks which allow merchants to add, remove, and reorder content within a section.
-
-Sections are made customizable by including a `{% schema %}` in the body. For more information, refer to the [section schema documentation](https://shopify.dev/docs/storefronts/themes/architecture/sections/section-schema).
-
-### Blocks
-
-[Blocks](https://shopify.dev/docs/storefronts/themes/architecture/blocks) let developers create flexible layouts by breaking down sections into smaller, reusable pieces of Liquid. Each block has its own set of settings, and can be added, removed, and reordered within a section.
-
-Blocks are made customizable by including a `{% schema %}` in the body. For more information, refer to the [block schema documentation](https://shopify.dev/docs/storefronts/themes/architecture/blocks/theme-blocks/schema).
-
-## Schemas
-
-When developing components defined by schema settings, we recommend these guidelines to simplify your code:
-
-- **Single property settings**: For settings that correspond to a single CSS property, use CSS variables:
-
-  ```liquid
-  <div class="collection" style="--gap: {{ block.settings.gap }}px">
-    ...
-  </div>
-
-  {% stylesheet %}
-    .collection {
-      gap: var(--gap);
-    }
-  {% endstylesheet %}
-
-  {% schema %}
-  {
-    "settings": [{
-      "type": "range",
-      "label": "gap",
-      "id": "gap",
-      "min": 0,
-      "max": 100,
-      "unit": "px",
-      "default": 0,
-    }]
-  }
-  {% endschema %}
-  ```
-
-- **Multiple property settings**: For settings that control multiple CSS properties, use CSS classes:
-
-  ```liquid
-  <div class="collection {{ block.settings.layout }}">
-    ...
-  </div>
-
-  {% stylesheet %}
-    .collection--full-width {
-      /* multiple styles */
-    }
-    .collection--narrow {
-      /* multiple styles */
-    }
-  {% endstylesheet %}
-
-  {% schema %}
-  {
-    "settings": [{
-      "type": "select",
-      "id": "layout",
-      "label": "layout",
-      "values": [
-        { "value": "collection--full-width", "label": "t:options.full" },
-        { "value": "collection--narrow", "label": "t:options.narrow" }
-      ]
-    }]
-  }
-  {% endschema %}
-  ```
-
-## CSS & JavaScript
-
-For CSS and JavaScript, we recommend using the [`{% stylesheet %}`](https://shopify.dev/docs/api/liquid/tags#stylesheet) and [`{% javascript %}`](https://shopify.dev/docs/api/liquid/tags/javascript) tags. They can be included multiple times, but the code will only appear once.
-
-### `critical.css`
-
-The Skeleton Theme explicitly separates essential CSS necessary for every page into a dedicated `critical.css` file.
-
-## Contributing
-
-We're excited for your contributions to the Skeleton Theme! This repository aims to remain as lean, lightweight, and fundamental as possible, and we kindly ask your contributions to align with this intention.
-
-Visit our [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed overview of our process, guidelines, and recommendations.
+The Instagram-specific components are prefixed `feed-*`. To learn more about theme structure, see the [theme architecture documentation](https://shopify.dev/docs/storefronts/themes/architecture).
 
 ## License
 
-Skeleton Theme is open-sourced under the [MIT](./LICENSE.md) License.
+Open-sourced under the [MIT](./LICENSE.md) License.
