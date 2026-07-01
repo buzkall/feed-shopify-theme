@@ -1,0 +1,96 @@
+{% doc %}
+  Registers a lightweight `x-trap` Alpine directive that keeps keyboard focus
+  inside a modal/drawer while it is open (WCAG 2.1.2 No Keyboard Trap is
+  satisfied because Escape still closes; WCAG 2.4.3 Focus Order / dialog pattern
+  require the focus to stay within the open dialog).
+
+  The theme ships the core Alpine build without the @alpinejs/focus plugin, so
+  this reimplements the subset the theme needs: focus containment, initial focus
+  move, focus restore on close, and an optional `.noscroll` body lock.
+
+  Usage: <div x-trap.noscroll="open" tabindex="-1">…</div>
+
+  @example
+  {% render 'feed-focus-trap' %}
+{% enddoc %}
+
+<script>
+  document.addEventListener('alpine:init', () => {
+    if (Alpine.directive._feedTrapRegistered) return;
+    Alpine.directive._feedTrapRegistered = true;
+
+    var FOCUSABLE =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function focusable(el) {
+      return Array.prototype.slice
+        .call(el.querySelectorAll(FOCUSABLE))
+        .filter(function (n) {
+          return n.offsetWidth > 0 || n.offsetHeight > 0 || n === document.activeElement;
+        });
+    }
+
+    Alpine.directive('trap', function (el, meta, utils) {
+      var expression = meta.expression;
+      var modifiers = meta.modifiers;
+      var evaluateLater = utils.evaluateLater;
+      var effect = utils.effect;
+      var cleanup = utils.cleanup;
+
+      var getValue = evaluateLater(expression);
+      var active = false;
+      var previouslyFocused = null;
+
+      function onKeydown(e) {
+        if (e.key !== 'Tab') return;
+        var nodes = focusable(el);
+        if (nodes.length === 0) {
+          e.preventDefault();
+          el.focus();
+          return;
+        }
+        var first = nodes[0];
+        var last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+
+      function activate() {
+        active = true;
+        previouslyFocused = document.activeElement;
+        if (modifiers.indexOf('noscroll') !== -1) document.body.style.overflow = 'hidden';
+        el.addEventListener('keydown', onKeydown);
+        Alpine.nextTick(function () {
+          var nodes = focusable(el);
+          (nodes[0] || el).focus();
+        });
+      }
+
+      function deactivate() {
+        active = false;
+        el.removeEventListener('keydown', onKeydown);
+        if (modifiers.indexOf('noscroll') !== -1) document.body.style.overflow = '';
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+          previouslyFocused.focus();
+        }
+        previouslyFocused = null;
+      }
+
+      effect(function () {
+        getValue(function (value) {
+          if (value && !active) activate();
+          else if (!value && active) deactivate();
+        });
+      });
+
+      cleanup(function () {
+        if (active) deactivate();
+      });
+    });
+  });
+</script>

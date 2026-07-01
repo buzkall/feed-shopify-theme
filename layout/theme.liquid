@@ -44,6 +44,8 @@
     {% # Critical + Tailwind/Alpine stack %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
     {{ 'tailwind-output.css' | asset_url | stylesheet_tag }}
+    {% # Registers the x-trap focus-trap directive (core Alpine build ships without @alpinejs/focus) %}
+    {% render 'feed-focus-trap' %}
     <script src="{{ 'alpinejs.js' | asset_url }}" defer="defer"></script>
 
     {% # Social, title, etc. %}
@@ -57,9 +59,13 @@
   </head>
 
   <body class="gradient">
+    <a class="skip-to-content-link" href="#MainContent">
+      {{ 'accessibility.skip_to_text' | t }}
+    </a>
+
     {% sections 'header-group' %}
 
-    <main id="MainContent" class="pt-14 pb-16 md:pb-0" role="main">
+    <main id="MainContent" class="pt-14 pb-16 md:pb-0" role="main" tabindex="-1">
       {{ content_for_layout }}
     </main>
 

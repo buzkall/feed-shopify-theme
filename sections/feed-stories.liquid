@@ -40,7 +40,7 @@
         class="absolute left-0 top-[calc(50%-0.75rem)] z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-feed-primary shadow-feed transition hover:bg-gray-50 md:flex dark:bg-feed-dark-elevated dark:text-white"
         aria-label="{{ 'general.pagination.previous' | t }}"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
@@ -71,7 +71,7 @@
               <a
                 href="{{ story_url | default: '#' }}"
                 @click="markSeen('{{ story_id }}')"
-                class="group flex flex-col items-center focus:outline-none"
+                class="group flex flex-col items-center rounded-lg"
                 {% if story_url == blank %}aria-disabled="true"{% endif %}
               >
                 <span class="block rounded-full {{ ring_size }}{% unless section.settings.show_gradient_ring and section.settings.enable_watched_stories %} {% if section.settings.show_gradient_ring %}bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105{% else %}border-2 border-feed-border p-[2px] dark:border-gray-700{% endif %}{% endunless %}"{% if section.settings.show_gradient_ring and section.settings.enable_watched_stories %} :class="isSeen('{{ story_id }}') ? 'border-2 border-gray-300 p-[2px] dark:border-gray-700' : 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105'"{% endif %}>
@@ -113,7 +113,7 @@
               assign story_id = collection.handle
             -%}
             <li class="shrink-0 snap-start">
-              <a href="{{ collection.url }}" @click="markSeen('{{ story_id }}')" class="group flex flex-col items-center focus:outline-none">
+              <a href="{{ collection.url }}" @click="markSeen('{{ story_id }}')" class="group flex flex-col items-center rounded-lg">
                 <span class="block rounded-full {{ ring_size }}{% unless section.settings.show_gradient_ring and section.settings.enable_watched_stories %} {% if section.settings.show_gradient_ring %}bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105{% else %}border-2 border-feed-border p-[2px] dark:border-gray-700{% endif %}{% endunless %}"{% if section.settings.show_gradient_ring and section.settings.enable_watched_stories %} :class="isSeen('{{ story_id }}') ? 'border-2 border-gray-300 p-[2px] dark:border-gray-700' : 'bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px] transition-transform group-hover:scale-105'"{% endif %}>
                   <span class="block h-full w-full overflow-hidden rounded-full bg-white p-[2px] dark:bg-feed-dark-bg">
                     {%- if story_image != blank -%}
@@ -167,7 +167,7 @@
         class="absolute right-0 top-[calc(50%-0.75rem)] z-10 hidden h-9 w-9 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-feed-primary shadow-feed transition hover:bg-gray-50 md:flex dark:bg-feed-dark-elevated dark:text-white"
         aria-label="{{ 'general.pagination.next' | t }}"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>

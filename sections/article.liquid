@@ -36,7 +36,7 @@
               </div>
             {%- endfor -%}
             {%- if paginate.pages > 1 -%}
-              <nav class="flex justify-center gap-4 text-sm" role="navigation">
+              <nav class="flex justify-center gap-4 text-sm" aria-label="{{ 'general.pagination.label' | t }}">
                 {%- if paginate.previous -%}<a href="{{ paginate.previous.url }}#comments" class="underline">{{ paginate.previous.title }}</a>{%- endif -%}
                 {%- if paginate.next -%}<a href="{{ paginate.next.url }}#comments" class="underline">{{ paginate.next.title }}</a>{%- endif -%}
               </nav>

@@ -69,6 +69,8 @@
     "skip_to_text": "Skip to content",
     "skip_to_product_info": "Skip to product information",
     "close": "Close",
+    "increase_quantity": "Increase quantity",
+    "decrease_quantity": "Decrease quantity",
     "unit_price_separator": "per",
     "vendor": "Vendor:",
     "error": "Error",
@@ -116,6 +118,7 @@
     },
     "product": {
       "add_to_cart": "Add to cart",
+      "variant": "Variant",
       "choose_options": "Choose options",
       "choose_product_options": "Choose options for {{ product_name }}",
       "description": "Description",
@@ -546,6 +549,7 @@
       "verified": "Verified account"
     },
     "nav": {
+      "primary": "Main",
       "home": "Home",
       "search": "Search",
       "cart": "Cart",
@@ -565,6 +569,9 @@
       "share": "Share",
       "save": "Save",
       "unsave": "Unsave"
+    },
+    "social": {
+      "view_post": "View Instagram post {{ index }}"
     }
   },
   "404": {

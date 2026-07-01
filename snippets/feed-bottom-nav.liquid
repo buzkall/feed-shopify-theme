@@ -15,21 +15,21 @@
   endif
 -%}
 
-<nav x-data class="feed-bottom-nav" aria-label="{{ 'general.search.search' | t }}">
+<nav x-data class="feed-bottom-nav" aria-label="{{ 'feed.nav.primary' | t }}">
   <a
     href="{{ routes.root_url }}"
     class="feed-bottom-nav__tab{% if is_home %} feed-bottom-nav__tab--active{% endif %}"
     aria-label="{{ 'feed.nav.home' | t }}"
     {% if is_home %}aria-current="page"{% endif %}
   >
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
     </svg>
     <span class="text-[10px]">{{ 'feed.nav.home' | t }}</span>
   </a>
 
   <button type="button" @click="window.dispatchEvent(new CustomEvent('feed:open-search'))" class="feed-bottom-nav__tab" aria-label="{{ 'feed.nav.search' | t }}">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
     <span class="text-[10px]">{{ 'feed.nav.search' | t }}</span>
@@ -37,7 +37,7 @@
 
   <button type="button" @click="$store.cart.openDrawer()" class="feed-bottom-nav__tab" aria-label="{{ 'feed.nav.cart' | t }}">
     <span class="relative inline-block">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
       </svg>
       <span
@@ -55,7 +55,7 @@
     class="feed-bottom-nav__tab{% if is_account %} feed-bottom-nav__tab--active{% endif %}"
     aria-label="{{ 'feed.nav.account' | t }}"
   >
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
     </svg>
     <span class="text-[10px]">{{ 'feed.nav.account' | t }}</span>
