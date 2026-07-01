@@ -37,8 +37,11 @@
         <span class="flex items-center text-sm font-semibold text-feed-primary dark:text-gray-100">
           <span class="truncate">{{ card_product.title | escape }}</span>
         </span>
-        <span class="text-xs text-feed-secondary dark:text-gray-400">
-          {%- if on_sale -%}<span class="line-through">{{ card_product.compare_at_price | money }}</span> {% endif -%}{{ card_product.price | money }}
+        <span class="flex items-center gap-1.5 text-xs text-feed-secondary dark:text-gray-400">
+          <span>{%- if on_sale -%}<span class="line-through">{{ card_product.compare_at_price | money }}</span> {% endif -%}{{ card_product.price | money }}</span>
+          {%- unless card_product.available -%}
+            <span class="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-white">{{ 'products.product.sold_out' | t }}</span>
+          {%- endunless -%}
         </span>
       </span>
     </a>
@@ -49,8 +52,8 @@
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" class="h-5 w-5"><circle cx="5" cy="12" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /></svg>
       </button>
       <div x-show="menuOpen" x-cloak x-transition.opacity class="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-feed-border bg-white py-1 text-left shadow-feed dark:border-gray-700 dark:bg-feed-dark-elevated">
-        {%- if add_variant != blank -%}
-          <button type="button" @click="addToCart()" class="block w-full px-4 py-2 text-left text-sm text-feed-primary hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800">
+        {%- if add_variant != blank and card_product.available -%}
+          <button type="button" @click="addToCart()" class="block w-full cursor-pointer px-4 py-2 text-left text-sm text-feed-primary hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-gray-800">
             {{ 'products.product.add_to_cart' | t }}
           </button>
         {%- endif -%}
@@ -163,6 +166,15 @@
   {%- comment -%} Caption: product excerpt {%- endcomment -%}
   {%- if excerpt != blank -%}
     <p class="px-4 pt-1.5 pb-1 text-sm leading-snug text-feed-primary dark:text-gray-200">{{ excerpt }}</p>
+  {%- endif -%}
+
+  {%- comment -%} Hashtag-style tags {%- endcomment -%}
+  {%- if card_product.tags.size > 0 -%}
+    <div class="flex flex-wrap gap-x-3 gap-y-1 px-4 pt-1">
+      {%- for tag in card_product.tags -%}
+        <a href="{{ routes.search_url }}?q={{ tag | url_encode }}" class="text-sm text-feed-link hover:underline">#{{ tag | handleize | replace: '-', '' }}</a>
+      {%- endfor -%}
+    </div>
   {%- endif -%}
 
   {%- if review_count > 0 -%}

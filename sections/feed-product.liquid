@@ -104,8 +104,8 @@
             {%- endfor -%}
           {%- endunless -%}
 
-          {%- comment -%} Quantity {%- endcomment -%}
-          <div class="mb-5">
+          {%- comment -%} Quantity (hidden when the selected variant is sold out) {%- endcomment -%}
+          <div class="mb-5" x-show="current && current.available" x-cloak>
             <span class="mb-1.5 block text-sm font-medium text-feed-primary dark:text-gray-100">{{ 'products.product.quantity.label' | t }}</span>
             <div class="inline-flex items-center rounded-full border border-feed-border dark:border-gray-700">
               <button type="button" @click="qty = Math.max(1, qty - 1)" class="px-3 py-2 text-feed-primary dark:text-gray-100" aria-label="{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}"><span aria-hidden="true">&minus;</span></button>
