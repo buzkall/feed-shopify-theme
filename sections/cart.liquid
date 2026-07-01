@@ -33,7 +33,7 @@
             <tr class="border-b border-feed-border dark:border-gray-800">
               <td class="py-5">
                 <div class="flex items-center gap-4">
-                  <a href="{{ item.url }}" class="block w-20 shrink-0">
+                  <a href="{{ item.url }}" class="block w-20 shrink-0" tabindex="-1" aria-hidden="true">
                     {%- if item.image -%}
                       {{ item.image | image_url: width: 160 | image_tag: widths: '80,160', class: 'w-full rounded-md', alt: item.product.title | escape }}
                     {%- endif -%}
@@ -53,14 +53,14 @@
                     <a
                       href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ item.quantity | minus: 1 }}"
                       class="flex h-9 w-9 items-center justify-center text-feed-secondary hover:text-feed-primary dark:hover:text-white"
-                      aria-label="{{ 'cart.quantity' | t }} -1"
-                    >−</a>
+                      aria-label="{{ 'accessibility.decrease_quantity' | t }}"
+                    ><span aria-hidden="true">−</span></a>
                     <span class="w-8 text-center text-sm">{{ item.quantity }}</span>
                     <a
                       href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ item.quantity | plus: 1 }}"
                       class="flex h-9 w-9 items-center justify-center text-feed-secondary hover:text-feed-primary dark:hover:text-white"
-                      aria-label="{{ 'cart.quantity' | t }} +1"
-                    >+</a>
+                      aria-label="{{ 'accessibility.increase_quantity' | t }}"
+                    ><span aria-hidden="true">+</span></a>
                   </div>
                   <a
                     href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity=0"

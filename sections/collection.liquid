@@ -16,6 +16,7 @@
             class: 'collection-product__image',
             image: product.featured_image,
             url: product.url,
+            alt: product.featured_image.alt | default: product.title | escape,
             width: 400,
             height: 400,
             crop: 'center'

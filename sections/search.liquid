@@ -12,7 +12,7 @@
 
   <form action="{{ routes.search_url }}" method="get" role="search" class="mx-auto max-w-2xl">
     <label for="search-input" class="sr-only">{{ 'search.title' | t }}</label>
-    <div class="flex items-center rounded-md border border-feed-border bg-feed-bg px-4 dark:border-gray-700 dark:bg-feed-dark-elevated">
+    <div class="flex items-center rounded-md border border-feed-border bg-feed-bg px-4 focus-within:border-feed-primary focus-within:ring-1 focus-within:ring-feed-primary dark:border-gray-700 dark:bg-feed-dark-elevated dark:focus-within:border-white dark:focus-within:ring-white">
       <input
         id="search-input"
         type="search"
@@ -74,7 +74,7 @@
         </ul>
 
         {%- if paginate.pages > 1 -%}
-          <nav class="mt-10 flex justify-center gap-4 text-sm text-feed-primary dark:text-white" role="navigation">
+          <nav class="mt-10 flex justify-center gap-4 text-sm text-feed-primary dark:text-white" aria-label="{{ 'general.pagination.label' | t }}">
             {%- if paginate.previous -%}
               <a href="{{ paginate.previous.url }}" class="underline underline-offset-4 hover:opacity-70">{{ paginate.previous.title }}</a>
             {%- endif -%}

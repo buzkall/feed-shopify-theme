@@ -81,6 +81,48 @@ html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
   overflow: hidden;
 }
 
+/** Accessibility: skip link + visible keyboard focus (WCAG 2.4.1 / 2.4.7 AA) */
+
+/* Skip-to-content link: off-screen until focused, then pinned top-left. */
+.skip-to-content-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  margin: 0.5rem;
+  padding: 0.625rem 1rem;
+  transform: translateY(-150%);
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #262626;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+  transition: transform 0.15s ease-in-out;
+}
+
+.skip-to-content-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--feed-accent, #0095f6);
+  outline-offset: 2px;
+}
+
+/* Keyboard-only focus indicator applied globally. Only activates for keyboard
+   users (:focus-visible), so it never shows on mouse click. */
+:focus-visible {
+  outline: 2px solid var(--feed-accent, #0095f6);
+  outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline-color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-to-content-link {
+    transition: none;
+  }
+}
+
 /** Theme styles below */
 
 /* Global type scale: 20% smaller than the browser default for the compact
