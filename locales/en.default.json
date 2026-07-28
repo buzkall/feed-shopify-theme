@@ -573,6 +573,9 @@
     },
     "social": {
       "view_post": "View Instagram post {{ index }}"
+    },
+    "sidebar": {
+      "footer_label": "Footer"
     }
   },
   "404": {

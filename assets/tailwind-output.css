@@ -401,6 +401,9 @@
   .mb-1\.5 {
     margin-bottom: calc(var(--spacing) * 1.5);
   }
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+  }
   .mb-3 {
     margin-bottom: calc(var(--spacing) * 3);
   }
@@ -500,6 +503,9 @@
   .h-24 {
     height: calc(var(--spacing) * 24);
   }
+  .h-\[4\.2rem\] {
+    height: 4.2rem;
+  }
   .h-\[5\.4rem\] {
     height: 5.4rem;
   }
@@ -565,6 +571,9 @@
   }
   .w-60 {
     width: calc(var(--spacing) * 60);
+  }
+  .w-\[4\.2rem\] {
+    width: 4.2rem;
   }
   .w-\[5\.4rem\] {
     width: 5.4rem;
@@ -755,6 +764,13 @@
       --tw-space-y-reverse: 0;
       margin-block-start: calc(calc(var(--spacing) * 2) * var(--tw-space-y-reverse));
       margin-block-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)));
+    }
+  }
+  .space-y-2\.5 {
+    :where(& > :not(:last-child)) {
+      --tw-space-y-reverse: 0;
+      margin-block-start: calc(calc(var(--spacing) * 2.5) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 2.5) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
   .space-y-5 {
@@ -1203,6 +1219,9 @@
     --tw-tracking: var(--tracking-wider);
     letter-spacing: var(--tracking-wider);
   }
+  .text-wrap {
+    text-wrap: wrap;
+  }
   .whitespace-nowrap {
     white-space: nowrap;
   }
@@ -1226,6 +1245,9 @@
   }
   .text-feed-secondary {
     color: var(--color-feed-secondary);
+  }
+  .text-feed-secondary\! {
+    color: var(--color-feed-secondary) !important;
   }
   .text-gray-300 {
     color: var(--color-gray-300);
@@ -1469,6 +1491,13 @@
       }
     }
   }
+  .hover\:text-feed-secondary {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-feed-secondary);
+      }
+    }
+  }
   .hover\:underline {
     &:hover {
       @media (hover: hover) {
@@ -1663,9 +1692,59 @@
       line-height: var(--tw-leading, var(--text-4xl--line-height));
     }
   }
+  .lg\:sticky {
+    @media (width >= 64rem) {
+      position: sticky;
+    }
+  }
+  .lg\:top-\[4\.5rem\] {
+    @media (width >= 64rem) {
+      top: 4.5rem;
+    }
+  }
+  .lg\:mt-14 {
+    @media (width >= 64rem) {
+      margin-top: calc(var(--spacing) * 14);
+    }
+  }
+  .lg\:block {
+    @media (width >= 64rem) {
+      display: block;
+    }
+  }
+  .lg\:grid {
+    @media (width >= 64rem) {
+      display: grid;
+    }
+  }
+  .lg\:min-w-0 {
+    @media (width >= 64rem) {
+      min-width: 0;
+    }
+  }
   .lg\:grid-cols-3 {
     @media (width >= 64rem) {
       grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .lg\:grid-cols-\[minmax\(0\,564px\)_288px\] {
+    @media (width >= 64rem) {
+      grid-template-columns: minmax(0,564px) 288px;
+    }
+  }
+  .lg\:justify-center {
+    @media (width >= 64rem) {
+      justify-content: center;
+    }
+  }
+  .lg\:gap-\[28px\] {
+    @media (width >= 64rem) {
+      gap: 28px;
+    }
+  }
+  .lg\:self-start {
+    @media (width >= 64rem) {
+      align-self: flex-start;
     }
   }
   .dark\:divide-gray-800 {
@@ -1784,6 +1863,11 @@
       color: var(--color-gray-400);
     }
   }
+  .dark\:text-gray-400\! {
+    &:where(.dark, .dark *) {
+      color: var(--color-gray-400) !important;
+    }
+  }
   .dark\:text-gray-500 {
     &:where(.dark, .dark *) {
       color: var(--color-gray-500);
@@ -1823,6 +1907,15 @@
       &:hover {
         @media (hover: hover) {
           background-color: var(--color-gray-800);
+        }
+      }
+    }
+  }
+  .dark\:hover\:text-gray-400 {
+    &:where(.dark, .dark *) {
+      &:hover {
+        @media (hover: hover) {
+          color: var(--color-gray-400);
         }
       }
     }
@@ -2130,7 +2223,7 @@
     margin-inline: auto;
     display: flex;
     width: 100%;
-    max-width: 470px;
+    max-width: 564px;
     flex-direction: column;
     gap: calc(var(--spacing) * 6);
   }
@@ -2229,7 +2322,7 @@ html.dark body.gradient {
 .shopify-section[class*='section-feed'] {
   display: block;
 }
-.feed, .feed-stories, .feed-product, .feed-reviews, .feed-footer, .feed-social, .feed-related, .feed-collection-banner, .feed-saved {
+.feed, .feed-stories, .feed-product, .feed-reviews, .feed-footer, .feed-social, .feed-related, .feed-collection-banner, .feed-saved, .feed-sidebar {
   background-color: transparent;
 }
 @keyframes feed-heart-burst {

@@ -119,7 +119,7 @@
 
   /* Single-column Instagram "home feed" of posts (NOT a grid — safe vs Dawn .grid) */
   .feed-post-feed {
-    @apply mx-auto flex w-full max-w-[470px] flex-col gap-6;
+    @apply mx-auto flex w-full max-w-[564px] flex-col gap-6;
   }
 
   .feed-post-card {
@@ -193,7 +193,8 @@ html.dark body.gradient {
 .feed-social,
 .feed-related,
 .feed-collection-banner,
-.feed-saved {
+.feed-saved,
+.feed-sidebar {
   background-color: transparent;
 }
 

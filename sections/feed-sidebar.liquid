@@ -1,0 +1,237 @@
+{% comment %}
+  Instagram-inspired right sidebar for the home feed.
+
+  Renders statically from layout/theme.liquid inside the .feed-shell right
+  column (home template only). Shows the shop "account" row (logo + name +
+  account link), any merchant-managed resource blocks (menus, text, images),
+  and an Instagram-style inline footer-links row with copyright.
+
+  Hidden below the lg breakpoint by the .feed-shell__aside rule in critical.css,
+  matching Instagram's mobile layout.
+{% endcomment %}
+
+{%- liquid
+  assign shop_alt = shop.name | escape
+
+  # Tagline: merchant override, otherwise fall back to the store description.
+  assign account_tagline = section.settings.tagline | default: shop.description
+-%}
+
+<aside class="feed-sidebar color-{{ section.settings.color_scheme }}">
+  {%- if section.settings.show_account -%}
+    <div class="feed-sidebar__account mb-6 flex items-center gap-3">
+      <a href="{{ routes.root_url }}" class="shrink-0" aria-label="{{ shop_alt }}">
+        {%- if settings.logo != blank -%}
+          <span class="block h-[4.2rem] w-[4.2rem] overflow-hidden rounded-full ring-1 ring-feed-border dark:ring-gray-700">
+            {{
+              settings.logo
+              | image_url: width: 136
+              | image_tag: class: 'h-full w-full object-cover', loading: 'lazy', alt: shop_alt
+            }}
+          </span>
+        {%- else -%}
+          <span class="flex h-[4.2rem] w-[4.2rem] shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-xl font-semibold text-white">
+            {{- shop.name | slice: 0 | upcase -}}
+          </span>
+        {%- endif -%}
+      </a>
+
+      <div class="min-w-0 flex-1">
+        <a href="{{ routes.root_url }}" class="block truncate text-sm font-semibold text-feed-primary hover:underline dark:text-gray-100">
+          {{ shop.name | escape }}
+        </a>
+        {%- if account_tagline != blank -%}
+          <p class="truncate text-sm text-feed-secondary dark:text-gray-400">{{ account_tagline | escape }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Merchant-managed resource blocks {%- endcomment -%}
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when 'menu' -%}
+        <div class="feed-sidebar__block mb-6" {{ block.shopify_attributes }}>
+          {%- if block.settings.heading != blank -%}
+            <h2 class="mb-3 text-sm! font-semibold! text-feed-secondary! dark:text-gray-400!">
+              {{ block.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+          {%- if block.settings.menu != blank -%}
+            <ul role="list" class="space-y-2.5">
+              {%- for link in block.settings.menu.links -%}
+                <li>
+                  <a
+                    href="{{ link.url }}"
+                    class="text-sm font-semibold text-feed-primary transition-colors hover:text-feed-secondary dark:text-gray-100 dark:hover:text-gray-400"
+                  >
+                    {{ link.title | escape }}
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+
+      {%- when 'text' -%}
+        <div class="feed-sidebar__block mb-6" {{ block.shopify_attributes }}>
+          {%- if block.settings.heading != blank -%}
+            <h2 class="mb-2 text-sm! font-semibold! text-feed-secondary! dark:text-gray-400!">
+              {{ block.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+          {%- if block.settings.subtext != blank -%}
+            <div class="feed-sidebar__text text-sm text-feed-secondary dark:text-gray-400">{{ block.settings.subtext }}</div>
+          {%- endif -%}
+        </div>
+
+      {%- when 'image' -%}
+        <div class="feed-sidebar__block mb-6" {{ block.shopify_attributes }}>
+          {%- if block.settings.image != blank -%}
+            {%- capture image_markup -%}
+              {{
+                block.settings.image
+                | image_url: width: 640
+                | image_tag: class: 'w-full rounded-lg', loading: 'lazy', sizes: '288px', widths: '160, 288, 480, 640', alt: block.settings.image.alt | default: shop_alt
+              }}
+            {%- endcapture -%}
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="block">{{ image_markup }}</a>
+            {%- else -%}
+              {{ image_markup }}
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+    {%- endcase -%}
+  {%- endfor -%}
+
+  {%- comment -%} Footer links + copyright {%- endcomment -%}
+  <div class="feed-sidebar__footer text-xs text-feed-secondary dark:text-gray-500">
+    {%- if section.settings.footer_menu != blank and section.settings.footer_menu.links.size > 0 -%}
+      <nav aria-label="{{ 'feed.sidebar.footer_label' | t }}">
+        <ul role="list" class="flex flex-wrap gap-x-2 gap-y-1">
+          {%- for link in section.settings.footer_menu.links -%}
+            <li class="feed-sidebar__footer-item">
+              <a href="{{ link.url }}" class="transition-colors hover:text-feed-primary dark:hover:text-white">
+                {{ link.title | escape }}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <p class="mt-4 uppercase">&copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</p>
+  </div>
+</aside>
+
+{% stylesheet %}
+  .feed-sidebar__text > * + * {
+    margin-top: 0.5rem;
+  }
+
+  /* Instagram-style dot separators between footer links */
+  .feed-sidebar__footer-item + .feed-sidebar__footer-item::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: currentColor;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.feed_sidebar.name",
+  "class": "section-feed-sidebar",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "default": true,
+      "label": "t:sections.feed_sidebar.settings.show_account.label"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "t:sections.feed_sidebar.settings.tagline.label",
+      "info": "t:sections.feed_sidebar.settings.tagline.info"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu",
+      "default": "footer",
+      "label": "t:sections.feed_sidebar.settings.footer_menu.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "t:sections.all.colors.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "t:sections.footer.blocks.link_list.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "default": "t:sections.feed_sidebar.blocks.menu.settings.heading.default",
+          "label": "t:sections.footer.blocks.link_list.settings.heading.label"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "default": "main-menu",
+          "label": "t:sections.footer.blocks.link_list.settings.menu.label"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "t:sections.footer.blocks.text.name",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "t:sections.footer.blocks.text.settings.heading.label"
+        },
+        {
+          "type": "richtext",
+          "id": "subtext",
+          "label": "t:sections.footer.blocks.text.settings.subtext.label"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "t:sections.feed_sidebar.blocks.image.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.feed_sidebar.blocks.image.settings.image.label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:sections.feed_sidebar.blocks.image.settings.link.label"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {
+      "show_account": true
+    },
+    "blocks": [
+      {
+        "type": "menu",
+        "settings": {
+          "menu": "main-menu"
+        }
+      }
+    ]
+  }
+}
+{% endschema %}

@@ -3122,6 +3122,41 @@
     },
     "feed_saved": {
       "name": "Saved"
+    },
+    "feed_sidebar": {
+      "name": "Feed sidebar",
+      "settings": {
+        "show_account": {
+          "label": "Show account row"
+        },
+        "tagline": {
+          "label": "Tagline",
+          "info": "Shown under the shop name. Defaults to your store description."
+        },
+        "footer_menu": {
+          "label": "Footer menu"
+        }
+      },
+      "blocks": {
+        "menu": {
+          "settings": {
+            "heading": {
+              "default": "Suggested for you"
+            }
+          }
+        },
+        "image": {
+          "name": "Image",
+          "settings": {
+            "image": {
+              "label": "Image"
+            },
+            "link": {
+              "label": "Link"
+            }
+          }
+        }
+      }
     }
   },
   "general": {
