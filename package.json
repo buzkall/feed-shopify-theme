@@ -1,7 +1,7 @@
 {
   "name": "feed-theme",
   "version": "1.0.0",
-  "description": "Instagram-inspired Shopify theme built on the Skeleton base (Tailwind v4 + Alpine.js)",
+  "description": "Social-feed Shopify theme built on the Skeleton base (Tailwind v4 + Alpine.js)",
   "private": true,
   "scripts": {
     "build:css": "tailwindcss -i ./assets/tailwind.css -o ./assets/tailwind-output.css",
@@ -12,7 +12,6 @@
   "keywords": [
     "shopify",
     "theme",
-    "instagram",
     "tailwindcss",
     "alpinejs"
   ],

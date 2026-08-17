@@ -1,13 +1,13 @@
 {% comment %}
-  Instagram-inspired right sidebar for the home feed.
+  Right sidebar for the home feed.
 
   Renders statically from layout/theme.liquid inside the .feed-shell right
   column (home template only). Shows the shop "account" row (logo + name +
   account link), any merchant-managed resource blocks (menus, text, images),
-  and an Instagram-style inline footer-links row with copyright.
+  and a compact inline footer-links row with copyright.
 
   Hidden below the lg breakpoint by the .feed-shell__aside rule in critical.css,
-  matching Instagram's mobile layout.
+  so mobile gets a single-column layout.
 {% endcomment %}
 
 {%- liquid
@@ -130,7 +130,7 @@
     margin-top: 0.5rem;
   }
 
-  /* Instagram-style dot separators between footer links */
+  /* Dot separators between footer links */
   .feed-sidebar__footer-item + .feed-sidebar__footer-item::before {
     content: '·';
     margin-right: 0.5rem;

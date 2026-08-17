@@ -1,20 +1,20 @@
 <h1 align="center">feed-theme</h1>
 
-<p align="center">An Instagram-inspired Shopify storefront built on the <strong>Skeleton</strong> base with <strong>Tailwind CSS v4</strong> and <strong>Alpine.js</strong>.</p>
+<p align="center">A social-feed Shopify storefront built on the <strong>Skeleton</strong> base with <strong>Tailwind CSS v4</strong> and <strong>Alpine.js</strong>.</p>
 
 <p align="center">
   <a href="./LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License"></a>
 </p>
 
-It recreates familiar social-media patterns — a stories carousel, a square product feed, swipeable product galleries, a like/comment/share action bar, a slide-in cart drawer and a mobile bottom tab bar — on top of Shopify's lightweight Skeleton theme. It mirrors the design of its Dawn-based sibling, [`ig_theme`](https://github.com/buzkall/shopify_ig_theme), while keeping the leaner Skeleton foundation.
+It recreates familiar social-media patterns — a stories carousel, a square product feed, swipeable product galleries, a like/comment/share action bar, a slide-in cart drawer and a mobile bottom tab bar — on top of Shopify's lightweight Skeleton theme.
 
 ## Features
 
 - **Stories carousel** with gradient rings (`feed-stories`)
-- **Instagram feed** (`feed`): single-column "posts" on the home page, and the same post card shown in a **3-column grid** on the collection and search pages
+- **Post feed** (`feed`): single-column "posts" on the home page, and the same post card shown in a **3-column grid** on the collection and search pages
 - **Post cards** (`feed-post-card`) with a swipeable image carousel, double-tap-to-like, and a like / comment / share / save action bar
 - **Slide-in cart drawer** and **mobile bottom navigation**
-- **IG-style reviews**, saved page, and social gallery
+- **Comment-style reviews**, saved page, and social gallery
 - **Light/dark mode** (applied before first paint to avoid a flash)
 - Storefront pages (cart, search, list-collections, 404, blog, article, page) styled to match the feed aesthetic
 - Configurable **accent color** and primary **font** via theme settings
@@ -55,6 +55,7 @@ npm run dev          # Shopify theme dev + Tailwind watcher (via concurrently)
 ├── assets          # Static assets (compiled CSS, JS, images) + critical.css, tailwind.css, alpinejs.js
 ├── blocks          # Reusable, nestable theme blocks
 ├── config          # Global theme settings (settings_schema.json / settings_data.json)
+├── docs            # Reference notes (improve.md — open gap analysis)
 ├── layout          # Top-level page wrappers (theme.liquid)
 ├── locales         # Translation files (en.default.json)
 ├── sections        # Page sections — feed, feed-stories, feed-header, feed-footer, cart, search, …
@@ -62,7 +63,14 @@ npm run dev          # Shopify theme dev + Tailwind watcher (via concurrently)
 └── templates       # JSON templates wiring sections together per page type
 ```
 
-The Instagram-specific components are prefixed `feed-*`. To learn more about theme structure, see the [theme architecture documentation](https://shopify.dev/docs/storefronts/themes/architecture).
+The feed components are prefixed `feed-*`. To learn more about theme structure, see the [theme architecture documentation](https://shopify.dev/docs/storefronts/themes/architecture).
+
+## Known limitations
+
+- **Customer account pages.** The header and mobile bottom nav link to `routes.account_url`, but the theme ships no `templates/customers/*`. On stores using Shopify's **new customer accounts** (the default) this is fine — Shopify hosts those pages. On a store still using **classic customer accounts**, those links land on unstyled pages until the templates are added.
+- **Contact page.** `templates/page.contact.json` exists, but Shopify only applies it once you create a page and assign it the `page.contact` template in the admin.
+- **Reviews and the social gallery** are merchant-curated via theme blocks. Live review submission or an auto-populating UGC feed needs a third-party app.
+- `docs/improve.md` tracks the remaining known gaps (half-star ratings, breadcrumbs, `Organization` JSON-LD, skeleton loading states, search keyboard navigation).
 
 ## License
 

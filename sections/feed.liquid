@@ -1,5 +1,5 @@
 {% comment %}
-  Instagram-inspired product grid feed.
+  Social-style product grid feed.
   Single column on mobile (full-width "posts"), 3 columns on desktop.
   Infinite scroll is powered by the Shopify Section Rendering API + IntersectionObserver,
   with a real paginated "Load more" link as the no-JS / keyboard fallback.
@@ -179,7 +179,7 @@
       },
     }));
 
-    {%- comment -%} Instagram "post" card (used when layout = posts) {%- endcomment -%}
+    {%- comment -%} Feed "post" card (used when layout = posts) {%- endcomment -%}
     Alpine.data('feedPostCard', ({ productId, likeBase, productHandle, productUrl, variantId, imageCount }) => ({
       liked: false,
       likeCount: likeBase,

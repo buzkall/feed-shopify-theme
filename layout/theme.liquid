@@ -10,7 +10,7 @@
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
     {%- endif -%}
 
-    {% # Instagram accent colour, consumed by the Tailwind --feed-accent token %}
+    {% # Accent colour, consumed by the Tailwind --feed-accent token %}
     <style>
       :root { --feed-accent: {{ settings.feed_accent | default: '#0095f6' }}; }
     </style>
@@ -66,12 +66,12 @@
     {% sections 'header-group' %}
 
     {%- if template.name == 'index' -%}
-      {%- comment -%} Home feed: centered feed column + sticky Instagram-style right sidebar (desktop only). {%- endcomment -%}
+      {%- comment -%} Home feed: centered feed column + sticky right sidebar (desktop only). {%- endcomment -%}
       <div class="lg:grid lg:grid-cols-[minmax(0,564px)_288px] lg:justify-center lg:gap-[28px]">
         <main id="MainContent" class="min-w-0 pt-14 pb-16 md:pb-0" role="main" tabindex="-1">
           {{ content_for_layout }}
         </main>
-        {%- comment -%} Hidden below lg (matches Instagram's mobile layout); sticky beside the feed on desktop. {%- endcomment -%}
+        {%- comment -%} Hidden below lg (single-column on mobile); sticky beside the feed on desktop. {%- endcomment -%}
         <div class="hidden lg:block lg:sticky lg:top-[4.5rem] lg:mt-14 lg:min-w-0 lg:self-start">
           {% section 'feed-sidebar' %}
         </div>

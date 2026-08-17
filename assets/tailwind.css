@@ -7,10 +7,14 @@
 @source '../snippets/**/*.liquid';
 @source '../assets/*.{js,css}';
 
+/* Prose, not markup: keep documentation out of automatic source detection so
+   class names quoted in it don't end up in the bundle. */
+@source not '../docs';
+
 /* Enable `class`-based dark mode (Tailwind v4 defaults to media queries). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Instagram-inspired design tokens (ported from the former tailwind.config.js). */
+/* Feed design tokens (ported from the former tailwind.config.js). */
 @theme {
   --color-feed-primary: #262626;
   --color-feed-secondary: #737373;
@@ -48,7 +52,7 @@
   --text-3xl--line-height: 1.2;
 }
 
-/* Instagram-inspired custom components */
+/* Feed custom components */
 @layer components {
   .feed-container {
     @apply max-w-7xl mx-auto px-4;
@@ -117,7 +121,7 @@
     display: none;
   }
 
-  /* Single-column Instagram "home feed" of posts (NOT a grid — safe vs Dawn .grid) */
+  /* Single-column "home feed" of posts (NOT a grid — safe vs Dawn .grid) */
   .feed-post-feed {
     @apply mx-auto flex w-full max-w-[564px] flex-col gap-6;
   }
@@ -126,7 +130,7 @@
     @apply overflow-hidden rounded-lg border border-feed-border bg-white pb-2 dark:border-gray-800 dark:bg-feed-dark-elevated;
   }
 
-  /* Instagram action row (♡ comment share … bookmark); callers add horizontal padding */
+  /* Action row (♡ comment share … bookmark); callers add horizontal padding */
   .feed-action-bar {
     @apply flex items-center gap-5 py-3;
   }
@@ -162,7 +166,7 @@
   margin: 0;
 }
 
-/* Instagram off-white canvas (white sections/cards sit on top); dark: near-black.
+/* Off-white canvas (white sections/cards sit on top); dark: near-black.
    Loads after Dawn's inline color-scheme <style>, so equal-specificity wins. */
 body.gradient {
   background-color: #fafafa;
@@ -174,15 +178,15 @@ html.dark body.gradient {
 
 /* Skeleton's critical.css turns every .shopify-section into a 3-column grid
    ([margin] [content] [margin]) and forces children into the centred column.
-   The Instagram components were authored for Dawn, where sections are plain
+   The feed components were authored for Dawn, where sections are plain
    blocks and each component self-centres via its own `margin-inline: auto`
-   (e.g. .feed-container). Opt the IG sections out of the grid so they behave
+   (e.g. .feed-container). Opt the feed sections out of the grid so they behave
    like Dawn: a full-width block whose inner container does the centring. */
 .shopify-section[class*='section-feed'] {
   display: block;
 }
 
-/* IG sections sit transparently on the body canvas. Dawn's color-scheme-* classes
+/* Feed sections sit transparently on the body canvas. Dawn's color-scheme-* classes
    otherwise paint them an opaque light background that blocks dark mode. Same
    single-class specificity, but this loads after Dawn's inline <style>, so it wins. */
 .feed,
@@ -194,7 +198,8 @@ html.dark body.gradient {
 .feed-related,
 .feed-collection-banner,
 .feed-saved,
-.feed-sidebar {
+.feed-sidebar,
+.feed-contact {
   background-color: transparent;
 }
 

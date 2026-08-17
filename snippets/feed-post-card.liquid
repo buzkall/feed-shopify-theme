@@ -1,5 +1,5 @@
 {% comment %}
-  Instagram home-feed "post" card. Used by sections/feed.liquid when its
+  Home-feed "post" card. Used by sections/feed.liquid when its
   layout setting is "posts". Accepts:
   - card_product: a product
 {% endcomment %}
@@ -64,7 +64,7 @@
     </div>
   </div>
 
-  {%- comment -%} Image carousel (swipe like Instagram; double-tap to like) {%- endcomment -%}
+  {%- comment -%} Image carousel (swipe to page; double-tap to like) {%- endcomment -%}
   {%- assign image_count = card_product.images.size -%}
   <div class="relative">
     {%- if image_count > 0 -%}

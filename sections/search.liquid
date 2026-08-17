@@ -44,7 +44,7 @@
           {%- for result in search.results -%}
             <li>
               {%- if result.object_type == 'product' -%}
-                {%- comment -%} Same Instagram post card as the home feed {%- endcomment -%}
+                {%- comment -%} Same post card as the home feed {%- endcomment -%}
                 {% render 'feed-post-card', card_product: result %}
               {%- else -%}
                 {%- comment -%} Articles / pages: simple card matching the feed look {%- endcomment -%}

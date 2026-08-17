@@ -1,5 +1,5 @@
 {% comment %}
-  Instagram-style product card (shared by the feed grid and related products).
+  Product card (shared by the feed grid and related products).
   Accepts:
   - card_product: a product object.
 {% endcomment %}
@@ -48,7 +48,7 @@
       </span>
     {%- endif -%}
 
-    {%- comment -%} Desktop hover overlay (Instagram grid style) {%- endcomment -%}
+    {%- comment -%} Desktop hover overlay (feed grid style) {%- endcomment -%}
     <div class="absolute inset-0 hidden items-center justify-center bg-black/40 px-2 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 md:flex">
       <div class="text-white">
         <p class="line-clamp-2 text-sm font-medium">{{ card_product.title | escape }}</p>

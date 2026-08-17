@@ -1,5 +1,5 @@
 {% comment %}
-  Instagram-style product page.
+  Feed-style product page.
   Task 6: media carousel (snippets/feed-product-gallery).
   Task 7: information layout — 2/3 gallery + 1/3 info, option-based variant
   picker, quantity, like/share, hashtag tags, caption description, sticky mobile
@@ -34,7 +34,7 @@
 
         <h1 class="text-2xl! font-semibold! text-feed-primary! dark:text-white!">{{ product.title | escape }}</h1>
 
-        {%- comment -%} Instagram action bar {%- endcomment -%}
+        {%- comment -%} Like / comment / share / save action bar {%- endcomment -%}
         <div class="mt-2">
           {%- render 'feed-action-bar', product: product -%}
           <span x-show="shareCopied" x-cloak class="text-xs text-feed-link">{{ 'general.share.success_message' | t }}</span>

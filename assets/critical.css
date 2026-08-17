@@ -5,7 +5,7 @@
    `components`/`utilities` helpers (mx-auto, margin-inline, h-full, object-cover,
    mb-*, …) win. Unlayered rules outrank every layer regardless of specificity, so
    an unlayered reset would silently beat Tailwind utilities — breaking the
-   Instagram components' `margin-inline: auto` centering and `h-full` image sizing. */
+   feed components' `margin-inline: auto` centering and `h-full` image sizing. */
 @layer properties, theme, base, components, utilities;
 
 /* Reset styles inspired by https://www.joshwcomeau.com/css/custom-css-reset/ */
@@ -126,7 +126,7 @@ html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
 /** Theme styles below */
 
 /* Global type scale: 20% smaller than the browser default for the compact
-   Instagram feel. All rem-based Tailwind sizing scales from this root. */
+   feed feel. All rem-based Tailwind sizing scales from this root. */
 html {
   font-size: 80%;
 }
